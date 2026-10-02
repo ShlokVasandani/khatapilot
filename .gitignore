@@ -1,0 +1,8 @@
+.env
+settings.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+shop.db

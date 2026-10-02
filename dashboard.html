@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KhataPilot</title>
+<style>
+:root{
+  --bg:#faf7f2; --panel:#ffffff; --ink:#1d1b16; --muted:#6f6a5f; --line:#e8e2d6;
+  --accent:#c2410c; --accent-soft:#fdeadd; --good:#15803d; --good-soft:#e1f3e7;
+  --bad:#b91c1c; --bad-soft:#fde7e7; --warn:#a16207; --warn-soft:#fbf0d0;
+  --radius:12px; --shadow:0 1px 2px rgba(29,27,22,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#15130f;--panel:#1e1b16;--ink:#f1ece2;--muted:#a39d90;--line:#322e26;
+    --accent:#fb923c;--accent-soft:#3a2415;--good:#4ade80;--good-soft:#14301f;
+    --bad:#f87171;--bad-soft:#3a1c1c;--warn:#fbbf24;--warn-soft:#3a2f12;--shadow:none}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--line);background:var(--panel)}
+h1{font-size:20px;margin:0;letter-spacing:-.01em}
+h1 span{color:var(--accent)}
+.sub{color:var(--muted);font-size:13px}
+.badges{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.badge{font-size:12px;padding:4px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+main{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding:16px;max-width:1400px;margin:0 auto}
+@media(min-width:1000px){main{grid-template-columns:minmax(280px,1fr) minmax(0,1.5fr) minmax(280px,1.1fr);padding:24px}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.card h2{font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:8px}
+textarea{width:100%;min-height:96px;resize:vertical;border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;background:var(--bg);color:var(--ink)}
+textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button{white-space:nowrap;font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+button.good{background:var(--good-soft);border-color:var(--good);color:var(--good);font-weight:600}
+button.bad{color:var(--bad)}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{font-size:12px;padding:4px 9px;border-radius:99px;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kpi{padding:14px;border-radius:10px}
+.kpi b{display:block;font-size:26px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.kpi.in{background:var(--good-soft);color:var(--good)}
+.kpi.out{background:var(--warn-soft);color:var(--warn)}
+.brief{white-space:pre-wrap;font-size:15px;min-height:60px}
+.src{font-size:11px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;white-space:nowrap}
+.tag.over{background:var(--bad-soft);color:var(--bad)}
+.tag.soon{background:var(--warn-soft);color:var(--warn)}
+.tag.ok{background:var(--bg);color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%;background:var(--good)}
+.bar.low i{background:var(--bad)}
+.log{max-height:280px;overflow:auto;display:flex;flex-direction:column;gap:6px}
+.log div{font-size:13px;padding:8px 10px;border-radius:8px;background:var(--bg);border-left:3px solid var(--good)}
+.log div.review{border-left-color:var(--warn)}
+.log small{color:var(--muted);display:block}
+.draft{border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:10px}
+.draft .meta{font-size:12px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.draft p{margin:0 0 10px;white-space:pre-wrap}
+.draft textarea{min-height:90px;margin-bottom:8px}
+.empty{color:var(--muted);font-size:13px}
+.review-item{font-size:13px;padding:8px 0;border-bottom:1px solid var(--line);display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+.review-item small{color:var(--warn);display:block}
+.err{color:var(--bad);font-size:13px;margin-top:6px}
+.progress{font-size:13px;color:var(--accent);margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Khata<span>Pilot</span></h1>
+    <div class="sub">Your shop's back office, from WhatsApp messages to a morning briefing</div>
+  </div>
+  <div class="badges">
+    <span class="badge" id="model">Nemotron on Nebius Token Factory</span>
+    <span class="sub" id="today"></span>
+  </div>
+</header>
+
+<main>
+  <!-- Left: inbox -->
+  <div class="col">
+    <section class="card">
+      <h2>Paste a customer message</h2>
+      <textarea id="msg" placeholder="e.g. Kapoor traders ne 3,000 bhej diye&#10;(one message per line)"></textarea>
+      <div class="chips" id="chips"></div>
+      <div class="row">
+        <button class="primary" id="send">Add to ledger</button>
+        <button id="demo">Load 28 demo messages</button>
+        <button id="reset" class="bad">Reset</button>
+      </div>
+      <div class="progress" id="progress" hidden></div>
+      <div class="err" id="err" hidden></div>
+    </section>
+    <section class="card">
+      <h2>What just happened</h2>
+      <div class="log" id="log"><span class="empty">Nothing yet. Paste a message above.</span></div>
+    </section>
+  </div>
+
+  <!-- Middle: briefing + ledger -->
+  <div class="col">
+    <section class="card">
+      <div class="kpis">
+        <div class="kpi in"><span>To collect</span><b id="kin">Rs 0</b></div>
+        <div class="kpi out"><span>To pay suppliers</span><b id="kout">Rs 0</b></div>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Morning briefing
+        <span class="row">
+          <button id="b-en">English</button>
+          <button id="b-hi">Hinglish</button>
+        </span>
+      </h2>
+      <div class="brief" id="brief"><span class="empty">Press a language to have Nemotron write today's briefing.</span></div>
+      <div class="src" id="brief-src"></div>
+    </section>
+    <section class="card">
+      <h2>Money</h2>
+      <table><thead><tr><th>Who</th><th></th><th class="num">Amount</th><th>Due</th></tr></thead><tbody id="dues"></tbody></table>
+    </section>
+    <section class="card">
+      <h2>Stock</h2>
+      <table><thead><tr><th>Item</th><th class="num">Left</th><th>vs reorder level</th></tr></thead><tbody id="stock"></tbody></table>
+    </section>
+  </div>
+
+  <!-- Right: approvals -->
+  <div class="col">
+    <section class="card">
+      <h2>Messages waiting for your approval <button id="gen">Draft messages</button></h2>
+      <div id="drafts"><span class="empty">No drafts. Press "Draft messages" to prepare reminders and reorders.</span></div>
+    </section>
+    <section class="card">
+      <h2>Needs your decision</h2>
+      <div id="review"><span class="empty">All clear.</span></div>
+    </section>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const inr = n => "Rs " + Math.round(n).toLocaleString("en-IN");
+const el = (tag, props = {}, ...kids) => {
+  const e = document.createElement(tag);
+  Object.assign(e, props);
+  kids.flat().forEach(k => e.append(k));
+  return e;
+};
+const SAMPLES = [
+  "Kapoor traders ne 3,000 bhej diye",
+  "Sharma ji ko 5 kg chai patti bhej dena kal",
+  "10 dabba tel chahiye, Gupta store",
+  "Verma ji ka 2,500 baaki hai, 12 tarikh tak dega"
+];
+let editing = null, busy = false;
+
+async function api(path, body) {
+  const res = await fetch("/api/" + path, {
+    method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body || {})
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+function showErr(e) { const n = $("err"); n.hidden = !e; n.textContent = e ? String(e.message || e) : ""; }
+
+async function run(btn, fn) {
+  if (busy) return; busy = true; const old = btn.textContent;
+  btn.disabled = true; btn.textContent = "Working...";
+  try { showErr(null); await fn(); } catch (e) { showErr(e); }
+  finally { btn.disabled = false; btn.textContent = old; busy = false; refresh(); }
+}
+
+function render(s) {
+  $("today").textContent = s.today;
+  if (s.model) $("model").textContent = "Nemotron · " + s.model.split("/").pop();
+  $("kin").textContent = inr(s.totals.customer_owes_us);
+  $("kout").textContent = inr(s.totals.we_owe_supplier);
+
+  // briefing
+  const b = s.brief;
+  $("brief").replaceChildren(b.text ? document.createTextNode(b.text)
+    : el("span", {className: "empty", textContent: "Press a language to have Nemotron write today's briefing."}));
+  $("brief-src").textContent = b.text ? (b.source === "nemotron"
+    ? "Written by Nemotron. Every number is checked against the ledger."
+    : "Model unavailable or failed the number check, showing the plain ledger summary.") : "";
+
+  // dues
+  const soon = d => d.due_date && !d.overdue && (new Date(d.due_date) - new Date(s.today)) / 864e5 <= 3;
+  $("dues").replaceChildren(...(s.dues.length ? s.dues.map(d => el("tr", {},
+    el("td", {textContent: d.party}),
+    el("td", {}, el("span", {className: "tag " + (d.overdue ? "over" : soon(d) ? "soon" : "ok"),
+      textContent: d.direction === "we_owe_supplier" ? "we owe" : "owes us"})),
+    el("td", {className: "num", textContent: inr(d.remaining)}),
+    el("td", {textContent: d.due_date ? d.due_date + (d.overdue ? " (overdue)" : "") : "-"})
+  )) : [el("tr", {}, el("td", {colSpan: 4, className: "empty", textContent: "No open dues."}))]));
+
+  // stock
+  const items = [...s.items].sort((a, c) => (a.stock_qty / (a.reorder_level || 1e9)) - (c.stock_qty / (c.reorder_level || 1e9)));
+  $("stock").replaceChildren(...items.map(i => {
+    const low = i.stock_qty <= i.reorder_level;
+    const pct = i.reorder_level ? Math.min(100, i.stock_qty / (i.reorder_level * 2) * 100) : 100;
+    const bar = el("div", {className: "bar" + (low ? " low" : "")}, el("i"));
+    bar.firstChild.style.width = pct + "%";
+    return el("tr", {},
+      el("td", {textContent: i.name + (low ? "  ⚠" : "")}),
+      el("td", {className: "num", textContent: (+i.stock_qty.toFixed(1)) + " " + (i.unit || "")}),
+      el("td", {}, bar));
+  }));
+
+  // activity log
+  $("log").replaceChildren(...(s.log.length ? s.log.map(l => el("div", {className: l.status === "review" ? "review" : ""},
+    l.message, el("small", {textContent: `${l.at} · ${l.status === "review" ? "needs your decision" : "recorded"}: ${l.detail}`})
+  )) : [el("span", {className: "empty", textContent: "Nothing yet. Paste a message above."})]));
+
+  // drafts (skip re-render while the owner is typing an edit)
+  if (editing === null) {
+    $("drafts").replaceChildren(...(s.drafts.length ? s.drafts.map(draftCard)
+      : [el("span", {className: "empty", textContent: 'No drafts. Press "Draft messages" to prepare reminders and reorders.'})]));
+  }
+
+  // review queue
+  $("review").replaceChildren(...(s.review.length ? s.review.map(r => el("div", {className: "review-item"},
+    el("div", {}, r.raw_message, el("small", {textContent: r.reason})),
+    el("button", {textContent: "Done", onclick: async () => { await api(`review/${r.id}/dismiss`); refresh(); }})
+  )) : [el("span", {className: "empty", textContent: "All clear."})]));
+
+  // demo progress
+  const j = s.job;
+  $("progress").hidden = !j.running;
+  $("progress").textContent = j.running ? `Reading demo messages with Nemotron: ${j.done} of ${j.total}...` : "";
+  $("demo").disabled = j.running;
+}
+
+function draftCard(d) {
+  const label = {payment_reminder: "Overdue reminder", gentle_reminder: "Friendly reminder", reorder: "Reorder"}[d.kind] || d.kind;
+  const card = el("div", {className: "draft"});
+  card.append(el("div", {className: "meta"}, el("span", {textContent: `${label} → ${d.party}`}),
+    el("span", {textContent: d.source === "nemotron" ? "written by Nemotron" : d.source === "owner" ? "edited by you" : "template"})));
+  if (editing === d.id) {
+    const ta = el("textarea", {value: d.body});
+    card.append(ta, el("div", {className: "row"},
+      el("button", {className: "primary", textContent: "Save", onclick: async () => {
+        await api(`drafts/${d.id}/edit`, {text: ta.value}); editing = null; refresh(); }}),
+      el("button", {textContent: "Cancel", onclick: () => { editing = null; refresh(); }})));
+  } else {
+    card.append(el("p", {textContent: d.body}), el("div", {className: "row"},
+      el("button", {className: "good", textContent: "Approve & open WhatsApp", onclick: async () => {
+        const r = await api(`drafts/${d.id}/approve`); if (r.link) window.open(r.link, "_blank", "noopener"); refresh(); }}),
+      el("button", {textContent: "Edit", onclick: () => { editing = d.id; refresh(); }}),
+      el("button", {className: "bad", textContent: "Reject", onclick: async () => { await api(`drafts/${d.id}/reject`); refresh(); }})));
+  }
+  return card;
+}
+
+async function refresh() {
+  try { render(await (await fetch("/api/state")).json()); } catch (e) { showErr(e); }
+}
+
+$("chips").replaceChildren(...SAMPLES.map(t => el("span", {className: "chip", textContent: t, style: "cursor:pointer",
+  onclick: () => { $("msg").value = t; $("msg").focus(); }})));
+$("send").onclick = e => run(e.target, async () => {
+  const text = $("msg").value.trim(); if (!text) return;
+  await api("message", {text}); $("msg").value = "";
+});
+$("b-en").onclick = e => run(e.target, () => api("briefing", {lang: "english"}));
+$("b-hi").onclick = e => run(e.target, () => api("briefing", {lang: "hinglish"}));
+$("gen").onclick = e => run(e.target, () => api("drafts/generate"));
+$("demo").onclick = e => run(e.target, () => api("demo/load"));
+$("reset").onclick = e => run(e.target, () => api("demo/reset"));
+refresh(); setInterval(refresh, 2500);
+</script>
+</body>
+</html>
