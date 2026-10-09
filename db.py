@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS parties (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
   name_key TEXT NOT NULL UNIQUE,
-  kind TEXT NOT NULL DEFAULT 'customer' CHECK (kind IN ('customer', 'supplier'))
+  kind TEXT NOT NULL DEFAULT 'customer' CHECK (kind IN ('customer', 'supplier')),
+  phone TEXT
 );
 CREATE TABLE IF NOT EXISTS items (
   id INTEGER PRIMARY KEY,
@@ -52,7 +53,8 @@ CREATE TABLE IF NOT EXISTS dues (
   paid REAL NOT NULL DEFAULT 0,
   due_date TEXT,
   status TEXT NOT NULL DEFAULT 'open',
-  source_txn INTEGER REFERENCES transactions(id)
+  source_txn INTEGER REFERENCES transactions(id),
+  bill_date TEXT
 );
 CREATE TABLE IF NOT EXISTS review_queue (
   id INTEGER PRIMARY KEY,
@@ -62,6 +64,22 @@ CREATE TABLE IF NOT EXISTS review_queue (
   reason TEXT,
   resolved INTEGER NOT NULL DEFAULT 0
 );
+CREATE TABLE IF NOT EXISTS day_closes (
+  day TEXT PRIMARY KEY,
+  closed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS snapshots (       -- what each customer owed when the day was closed
+  day TEXT NOT NULL,
+  party_id INTEGER NOT NULL REFERENCES parties(id),
+  total REAL NOT NULL,
+  lines TEXT NOT NULL,                       -- JSON: [{"date": "2026-09-28", "amount": 7000}, ...]
+  PRIMARY KEY (day, party_id)
+);
+CREATE TABLE IF NOT EXISTS reminders_opened ( -- WhatsApp opened for this customer on this day
+  day TEXT NOT NULL,
+  party_id INTEGER NOT NULL REFERENCES parties(id),
+  PRIMARY KEY (day, party_id)
+);
 """
 
 
@@ -70,7 +88,19 @@ def connect(path: str = "shop.db") -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.executescript(SCHEMA)
+    _migrate(conn)
     return conn
+
+
+def _migrate(conn) -> None:
+    """Add columns that older shop.db files don't have yet."""
+    def cols(table):
+        return {r["name"] for r in conn.execute(f"PRAGMA table_info({table})")}
+    if "phone" not in cols("parties"):
+        conn.execute("ALTER TABLE parties ADD COLUMN phone TEXT")
+    if "bill_date" not in cols("dues"):
+        conn.execute("ALTER TABLE dues ADD COLUMN bill_date TEXT")
+    conn.commit()
 
 
 def _key(name: str) -> str:
@@ -247,9 +277,9 @@ def apply_extraction(conn, raw: str, ex: dict) -> dict:
                 detail = f"{party_name}: promised date for existing {amount:g} due set to {due}"
             else:
                 conn.execute(
-                    "INSERT INTO dues (party_id, direction, amount, due_date, source_txn) "
-                    "VALUES (?, ?, ?, ?, ?)",
-                    (party_id, direction, amount, due, txn),
+                    "INSERT INTO dues (party_id, direction, amount, due_date, source_txn, bill_date) "
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    (party_id, direction, amount, due, txn, date.today().isoformat()),
                 )
                 detail = f"new due: {party_name} {amount:g} ({direction}), due {due or 'no date'}"
         return {"status": "recorded", "detail": detail}
@@ -404,14 +434,20 @@ def seed_demo(conn, today: date | None = None) -> None:
             get_or_create_party(conn, name, kind)
         existing = conn.execute("SELECT COUNT(*) AS n FROM dues").fetchone()["n"]
         if existing == 0:
-            for name, direction, amount, days_ago in [
-                ("Kapoor traders", "customer_owes_us", 12000, 6),
-                ("Sharma ji", "customer_owes_us", 4500, 2),
-                ("Mehta wholesale", "we_owe_supplier", 8000, -3),
+            for name, direction, amount, bill_days_ago, due_days_ago in [
+                ("Kapoor traders", "customer_owes_us", 7000, 9, 6),
+                ("Kapoor traders", "customer_owes_us", 5000, 7, 4),
+                ("Sharma ji", "customer_owes_us", 4500, 5, 2),
+                ("Mehta wholesale", "we_owe_supplier", 8000, 4, -3),
             ]:
                 pid = get_or_create_party(conn, name)
-                due = (today - timedelta(days=days_ago)).isoformat()
                 conn.execute(
-                    "INSERT INTO dues (party_id, direction, amount, due_date) VALUES (?, ?, ?, ?)",
-                    (pid, direction, amount, due),
+                    "INSERT INTO dues (party_id, direction, amount, due_date, bill_date) VALUES (?, ?, ?, ?, ?)",
+                    (pid, direction, amount, (today - timedelta(days=due_days_ago)).isoformat(),
+                     (today - timedelta(days=bill_days_ago)).isoformat()),
                 )
+        # obviously fake numbers so the WhatsApp links work in the demo; edit them in the dashboard
+        for n, (name, phone) in enumerate([("Kapoor traders", "919000000001"), ("Sharma ji", "919000000002"),
+                                           ("Gupta store", "919000000003"), ("Ramesh bhai", "919000000004"),
+                                           ("Verma ji", "919000000005")]):
+            conn.execute("UPDATE parties SET phone = ? WHERE name_key = ? AND phone IS NULL", (phone, _key(name)))

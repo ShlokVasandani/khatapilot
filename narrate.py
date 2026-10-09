@@ -22,7 +22,7 @@ TOTAL_RE = re.compile(r"\d[\d,]*(?:\.\d+)?")
 PROMPT = """You are the back-office assistant of a small Indian shop. Write the owner's \
 morning briefing from the FACTS below.
 
-Style: <<LANG>>. Short and warm, like a trusted munim ji talking. Start with "Namaste" (never \
+Style: <<LANG>>. Short and warm, like a trusted munim ji talking. Start with "Namaste" (or "नमस्ते" in Hindi) (never \
 "sir" or "boss"). Plain text only, no markdown, no tables. Use at most 120 words.
 <<EXAMPLE>>
 
@@ -47,8 +47,15 @@ HINGLISH_EXAMPLE = (
     'bacha hai, order kar dein. 4 messages aapke decision ka wait kar rahe hain."'
 )
 
+HINDI_EXAMPLE = (
+    'For Hindi, write in Devanagari script but keep every number and rupee amount in ordinary digits '
+    'as Rs 14,000. Keep names and dates exactly as given in the FACTS. Example: "नमस्ते! आज Rs 14,000 वसूल करने हैं। '
+    'सबसे पहले Kapoor traders का Rs 3,000, जो 2026-09-26 से बाकी है।"'
+)
+
 LANGS = {
     "english": "simple English",
+    "hindi": "Hindi in Devanagari script (simple, spoken style)",
     "hinglish": "Hinglish (Hindi in Roman script mixed with simple English, the way shopkeepers text)",
 }
 
@@ -73,6 +80,10 @@ def numbers_ok(text: str, facts: dict) -> list[float]:
 def _facts_for_model(b: dict) -> dict:
     """Trim the briefing to what the model needs, with plain-language field names."""
     t = b["totals"]
+    overdue_by_party: dict[str, float] = {}
+    for r in b["overdue"]:
+        if r["direction"] == "customer_owes_us":
+            overdue_by_party[r["party"]] = overdue_by_party.get(r["party"], 0) + r["remaining"]
     return {
         "today": b["date"],
         "total_to_collect": t["customer_owes_us"],
@@ -82,6 +93,7 @@ def _facts_for_model(b: dict) -> dict:
              "side": "customer owes us" if r["direction"] == "customer_owes_us" else "we owe supplier"}
             for r in b["overdue"]
         ],
+        "overdue_total_per_customer": [{"party": p, "overdue_total": a} for p, a in overdue_by_party.items()],
         "due_in_next_3_days": [
             {"party": r["party"], "amount": r["remaining"], "due": r["due_date"],
              "side": "customer owes us" if r["direction"] == "customer_owes_us" else "we owe supplier"}
@@ -103,7 +115,7 @@ def narrate(b: dict, lang: str = "english", client=None, model: str | None = Non
             from extract import TEXT_MODEL, client as _client
             client, model = _client, model or os.environ.get("BRIEFING_MODEL") or TEXT_MODEL
         prompt = (PROMPT.replace("<<LANG>>", LANGS.get(lang, LANGS["english"]))
-                  .replace("<<EXAMPLE>>", HINGLISH_EXAMPLE if lang == "hinglish" else "")
+                  .replace("<<EXAMPLE>>", {"hinglish": HINGLISH_EXAMPLE, "hindi": HINDI_EXAMPLE}.get(lang, ""))
                   .replace("<<FACTS>>", json.dumps(facts, ensure_ascii=False, indent=1)))
         for _ in range(2):
             resp = client.chat.completions.create(

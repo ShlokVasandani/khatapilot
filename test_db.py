@@ -136,23 +136,21 @@ def test_narration_number_guard_and_fallback():
     assert src == "fallback" and "DAILY BRIEFING" in bad
 
 
-def test_drafts_generate_dedupe_and_approval():
+def test_reorder_drafts_generate_dedupe_and_approval():
     import drafts
     c = fresh()
+    assert drafts.generate(c, TODAY, use_llm=False) == []          # nothing low yet
     db.apply_extraction(c, "m", ex(intent="order", party="Gupta store",
                                    items=[{"name": "Sugar", "quantity": 25, "unit": "kg"}]))  # sugar now low
     ids = drafts.generate(c, TODAY, use_llm=False)
-    kinds = sorted(r["kind"] for r in c.execute("SELECT kind FROM drafts"))
-    assert kinds.count("payment_reminder") == 2 and kinds.count("reorder") == 1  # Kapoor, Sharma; one supplier order
-    assert not any(r["party"] == "Mehta wholesale" and r["kind"] != "reorder"
-                   for r in c.execute("SELECT party, kind FROM drafts"))  # never dun a supplier
-    assert drafts.generate(c, TODAY, use_llm=False) == []                  # no duplicates
-    kap = c.execute("SELECT body FROM drafts WHERE party='Kapoor traders'").fetchone()["body"]
-    assert "12,000" in kap
+    assert len(ids) == 1
+    row = c.execute("SELECT kind, party, body FROM drafts").fetchone()
+    assert row["kind"] == "reorder" and row["party"] == "Mehta wholesale" and "sugar: 45 kg" in row["body"]
+    assert drafts.generate(c, TODAY, use_llm=False) == []          # no duplicates
+    drafts.edit(c, ids[0], "Namaste, kal tak bhej dena")
+    assert c.execute("SELECT source FROM drafts WHERE id=?", (ids[0],)).fetchone()[0] == "owner"
     drafts.set_status(c, ids[0], "approved")
-    assert len(drafts.pending(c)) == len(ids) - 1
-    drafts.edit(c, ids[1], "Namaste, kal tak bhej dena")
-    assert c.execute("SELECT source FROM drafts WHERE id=?", (ids[1],)).fetchone()[0] == "owner"
+    assert drafts.pending(c) == []
 
 
 def test_draft_wording_guard():
@@ -168,18 +166,125 @@ def test_draft_wording_guard():
             m = type("M", (), {"content": self.text})
             return type("R", (), {"choices": [type("C", (), {"message": m})]})
 
-    facts = {"customer": "Kapoor traders", "amount": 3000.0, "was_due_on": "2026-09-26", "days_overdue": 6}
-    ok, src = drafts.write_message("payment_reminder", facts, Fake("Namaste Kapoor ji, Rs 3,000 baaki hain."), "m")
+    facts = {"supplier": "Mehta wholesale", "items": [{"item": "sugar", "unit": "kg", "order_qty": 45}]}
+    ok, src = drafts.write_message("reorder", facts, Fake("Namaste Mehta ji, sugar 45 kg bhej dein."), "m")
     assert src == "nemotron"
-    for bad in ("Namaste, Rs 30,000 baaki hain.", "Namaste [Name], Rs 3,000 baaki hain."):
-        text, src = drafts.write_message("payment_reminder", facts, Fake(bad), "m")
-        assert src == "template" and "3,000" in text
+    for bad in ("Namaste, sugar 450 kg chahiye.", "Namaste [Name], sugar 45 kg chahiye."):
+        text, src = drafts.write_message("reorder", facts, Fake(bad), "m")
+        assert src == "template" and "45" in text
+
+
+def test_reminder_message_format_and_indian_grouping():
+    import eod
+    text = eod.reminder_text("Kapoor ji", [{"date": "2026-09-28", "amount": 7000},
+                                           {"date": "2026-09-30", "amount": 5000}], firm="Shree Fruits")
+    assert text == ("Namaste Kapoor ji,\nAapke baaki payments:\n\n"
+                    "Shree Fruits - Rs 7,000 - 28 Sep\nShree Fruits - Rs 5,000 - 30 Sep\n\n"
+                    "Total: Rs 12,000\n\nJald se jald hisaab clear kare.\nThank you")
+    assert eod.inr(120000) == "Rs 1,20,000" and eod.inr(999) == "Rs 999" and eod.inr(1234567) == "Rs 12,34,567"
+    assert "28 Sep" not in eod.reminder_text("X", [{"date": None, "amount": 500}], "F")
+
+
+def test_phone_and_whatsapp_link():
+    import eod
+    assert eod.normalize_phone("98765 43210") == "919876543210"
+    assert eod.normalize_phone("+91-98765-43210") == "919876543210"
+    for bad in ("12345", "", "abc"):
+        try:
+            eod.normalize_phone(bad)
+            assert False, bad
+        except ValueError:
+            pass
+    link = eod.wa_link("919876543210", "Namaste\nTotal: Rs 5")
+    assert link.startswith("https://wa.me/919876543210?text=Namaste%0ATotal") and " " not in link
+
+
+def test_close_day_freezes_amounts_and_warns_on_change():
+    import eod
+    c = fresh()
+    pre = {x["name"]: x for x in eod.collections(c, TODAY)}
+    assert pre["Kapoor traders"]["state"] == "new" and pre["Kapoor traders"]["live_total"] == 12000
+    out = tempfile.mkdtemp()
+    result = eod.close_day(c, TODAY, out_dir=out)
+    assert result["frozen_total"] == 16500 and len(result["files"]) == 2
+    col = {x["name"]: x for x in eod.collections(c, TODAY)}
+    assert set(col) == {"Kapoor traders", "Sharma ji"}               # suppliers are never chased
+    assert col["Kapoor traders"]["state"] == "frozen"
+    assert "Rs 7,000 - " in col["Kapoor traders"]["text"] and "Total: Rs 12,000" in col["Kapoor traders"]["text"]
+    assert col["Kapoor traders"]["text"].count("Shree Fruits") == 2   # one line per bill
+    # Kapoor pays after the close: message keeps the frozen figure but is flagged
+    db.apply_extraction(c, "m", ex(intent="payment_received", party="Kapoor traders", amount_inr=7000,
+                                   direction="customer_owes_us"))
+    col = {x["name"]: x for x in eod.collections(c, TODAY)}
+    assert col["Kapoor traders"]["state"] == "changed"
+    assert col["Kapoor traders"]["live_total"] == 5000 and "Total: Rs 12,000" in col["Kapoor traders"]["text"]
+    # fully paid customers disappear from the list
+    db.apply_extraction(c, "m", ex(intent="payment_received", party="Sharma ji", amount_inr=4500,
+                                   direction="customer_owes_us"))
+    assert "Sharma ji" not in {x["name"] for x in eod.collections(c, TODAY)}
+    # sent-today marker
+    eod.mark_opened(c, col["Kapoor traders"]["party_id"], TODAY)
+    assert {x["name"]: x for x in eod.collections(c, TODAY)}["Kapoor traders"]["opened_today"] is True
+
+
+def test_day_close_writes_spreadsheets():
+    import csv, eod
+    from datetime import date as real_date
+    c = fresh()
+    db.apply_extraction(c, "Kapoor traders ko 20 peti seb bhej diye", ex(
+        intent="order", party="Kapoor traders", items=[{"name": "seb", "quantity": 20, "unit": "peti"}]))
+    out = tempfile.mkdtemp()
+    book, outstanding = eod.close_day(c, real_date.today(), out_dir=out)["files"]
+    rows = list(csv.reader(open(book, encoding="utf-8-sig")))
+    assert rows[0][:3] == ["Time", "Party", "Type"]
+    assert any("Kapoor traders" in r and "20 peti seb" in r for r in rows)
+    rows = list(csv.reader(open(outstanding, encoding="utf-8-sig")))
+    assert rows[0][0] == "Side" and ["TOTAL to collect"] == [r[0] for r in rows if r and r[0].startswith("TOTAL to collect")]
+    assert [r[7] for r in rows if r and r[0] == "TOTAL to collect"] == ["16500"]
+    assert [r[7] for r in rows if r and r[0] == "TOTAL to pay"] == ["8000"]
+
+
+def test_old_database_is_migrated():
+    import sqlite3
+    path = os.path.join(tempfile.mkdtemp(), "old.db")
+    raw = sqlite3.connect(path)
+    raw.executescript("CREATE TABLE parties (id INTEGER PRIMARY KEY, name TEXT NOT NULL, name_key TEXT NOT NULL UNIQUE, "
+                      "kind TEXT NOT NULL DEFAULT 'customer'); "
+                      "CREATE TABLE dues (id INTEGER PRIMARY KEY, party_id INTEGER NOT NULL, direction TEXT NOT NULL, "
+                      "amount REAL NOT NULL, paid REAL NOT NULL DEFAULT 0, due_date TEXT, status TEXT NOT NULL DEFAULT 'open', "
+                      "source_txn INTEGER);")
+    raw.commit(); raw.close()
+    conn = db.connect(path)
+    assert "phone" in {r["name"] for r in conn.execute("PRAGMA table_info(parties)")}
+    assert "bill_date" in {r["name"] for r in conn.execute("PRAGMA table_info(dues)")}
 
 
 def test_briefing_runs():
     c = fresh()
     text = db.format_briefing(db.briefing(c, TODAY))
     assert "Kapoor traders" in text and "DAILY BRIEFING" in text
+
+
+def test_eval_scoring():
+    import evalrun
+    label = {"intent": "order", "party": "Gupta store", "items": [["tel", 10], ["parle-g", 50]]}
+    good = ex(intent="order", party="gupta  Store", items=[{"name": "tel", "quantity": 10, "unit": "dabba"},
+                                                         {"name": "Parle-G", "quantity": 50, "unit": "packet"}])
+    assert evalrun.score(label, good) == []
+    assert evalrun.score(label, dict(good, party=None)) == ["party"]
+    assert evalrun.score(label, dict(good, items=[])) == ["items"]
+    assert evalrun.score({"intent": "complaint"}, ex(intent="order")) == ["intent"]
+
+
+def test_eval_ledger_gate_and_summary():
+    import evalrun
+    assert evalrun.reaches_ledger(ex(intent="order"))
+    assert not evalrun.reaches_ledger(ex(intent="complaint"))
+    assert not evalrun.reaches_ledger(ex(intent="payment_received", amount_inr=-5))
+    rows = [{"correct": True, "wrong_fields": [], "reached_ledger": True, "latency_ms": 100},
+            {"correct": False, "wrong_fields": ["amount"], "reached_ledger": False, "latency_ms": 300}]
+    s = evalrun.summarize(rows)
+    assert s["accuracy"] == 50.0 and s["caught_before_ledger"] == 1 and s["wrong_reached_ledger"] == 0
 
 
 if __name__ == "__main__":
