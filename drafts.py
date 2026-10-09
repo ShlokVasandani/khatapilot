@@ -1,12 +1,12 @@
 """
-Draft WhatsApp reminders and reorder messages for the owner to approve.
+Draft WhatsApp reorder messages to suppliers for the owner to approve.
 
 Nemotron writes the wording; amounts, dates and quantities come from the ledger.
 Nothing is ever sent automatically: every draft waits as 'pending' until the owner
 approves, edits or rejects it.
 
 Usage:
-    python drafts.py generate        # create drafts from the current shop.db
+    python drafts.py generate        # draft supplier reorder messages from the current shop.db
     python drafts.py list
     python drafts.py review          # approve / edit / reject one by one
     python drafts.py approve 3
@@ -29,7 +29,7 @@ DRAFT_SCHEMA = """
 CREATE TABLE IF NOT EXISTS drafts (
   id INTEGER PRIMARY KEY,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  kind TEXT NOT NULL,                -- payment_reminder | gentle_reminder | reorder
+  kind TEXT NOT NULL,                -- reorder
   party TEXT NOT NULL,
   dedupe_key TEXT NOT NULL,
   facts TEXT NOT NULL,
@@ -50,9 +50,7 @@ Rules:
 - No placeholders such as [Name], no emojis, no markdown.
 - Output only the message text.
 
-Examples of the tone:
-"Namaste Kapoor ji, aapke Rs 3,000 26 September se baaki hain. Kripya bata dein kab tak bhej payenge? Dhanyavaad."
-"Namaste Gupta ji, Rs 4,500 ka payment 4 October ko due hai. Yaad dilane ke liye message kiya, dhanyavaad."
+Example of the tone:
 "Namaste Mehta ji, hamein sugar 70 kg aur dal 25 kg chahiye. Kab tak bhej sakenge? Dhanyavaad."
 
 FACTS:
@@ -60,8 +58,6 @@ FACTS:
 """
 
 GOALS = {
-    "payment_reminder": "Goal: politely remind the customer that this payment is overdue and ask when they can pay.",
-    "gentle_reminder": "Goal: a friendly heads-up that this payment is coming due soon.",
     "reorder": "Goal: order these items from the supplier and ask when they can deliver.",
 }
 
@@ -76,23 +72,9 @@ def _suggest_qty(stock: float, level: float) -> int:
 
 
 def plan(conn, today: date | None = None) -> list[dict]:
-    """What messages the shop needs today, as facts only (no wording yet)."""
-    today = today or date.today()
+    """What the shop needs to order from suppliers, as facts only (no wording yet).
+    Customer payment reminders are built in eod.py from the end-of-day figures."""
     out = []
-    for r in db.overdue_dues(conn, today):
-        if r["direction"] != "customer_owes_us":
-            continue
-        days = (today - date.fromisoformat(r["due_date"])).days
-        facts = {"customer": r["party"], "amount": r["remaining"], "was_due_on": r["due_date"],
-                 "days_overdue": days}
-        out.append({"kind": "payment_reminder", "party": r["party"], "facts": facts,
-                    "key": f"payment_reminder|{r['party']}|{r['remaining']:g}"})
-    for r in db.dues_due_soon(conn, 3, today):
-        if r["direction"] != "customer_owes_us" or r["due_date"] < today.isoformat():
-            continue
-        facts = {"customer": r["party"], "amount": r["remaining"], "due_on": r["due_date"]}
-        out.append({"kind": "gentle_reminder", "party": r["party"], "facts": facts,
-                    "key": f"gentle_reminder|{r['party']}|{r['remaining']:g}"})
     low = db.low_stock(conn)
     supplier = conn.execute(
         "SELECT name FROM parties WHERE kind='supplier' ORDER BY id LIMIT 1").fetchone()
@@ -108,12 +90,6 @@ def plan(conn, today: date | None = None) -> list[dict]:
 
 def template(kind: str, facts: dict) -> str:
     """Plain fallback wording, used when the model is unavailable or fails the number check."""
-    if kind == "payment_reminder":
-        return (f"Namaste {facts['customer']}, aapke Rs {facts['amount']:,.0f} {facts['was_due_on']} se "
-                f"baaki hain. Kripya jaldi bhej dein, aur batayein kab tak ho jayega. Dhanyavaad.")
-    if kind == "gentle_reminder":
-        return (f"Namaste {facts['customer']}, yaad dilane ke liye: Rs {facts['amount']:,.0f} "
-                f"{facts['due_on']} ko due hain. Dhanyavaad.")
     lines = "\n".join(f"- {i['item']}: {i['order_qty']:g} {i['unit'] or ''}".rstrip() for i in facts["items"])
     return (f"Namaste {facts['supplier']}, hamein ye maal chahiye:\n{lines}\n"
             f"Kab tak bhej sakte hain? Dhanyavaad.")

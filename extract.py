@@ -13,6 +13,7 @@ import mimetypes
 import os
 import re
 import sys
+import time
 from datetime import date
 
 from dotenv import load_dotenv
@@ -29,6 +30,9 @@ client = OpenAI(
 
 TEXT_MODEL = os.environ["TEXT_MODEL"]
 VISION_MODEL = os.environ.get("VISION_MODEL") or TEXT_MODEL
+# EXTRACT_THINKING=off turns Nemotron's reasoning off for extraction: roughly 7x faster. Default on.
+EXTRA = {} if os.environ.get("EXTRACT_THINKING", "on").lower() != "off" else \
+    {"extra_body": {"chat_template_kwargs": {"enable_thinking": False}}}
 
 MESSAGE_PROMPT = """You extract structured data from messy shop messages written in \
 English, Hindi, or Hinglish. Return ONLY valid JSON, no commentary.
@@ -58,6 +62,7 @@ Rules:
 - "Payment kar diya", "paise bhej diye" and similar mean a customer has paid: intent "payment_received", direction "customer_owes_us" (even if the payer is not named).
 - When the SHOP pays a supplier ("X ko 3,000 bhej diye", "X ko paise de diye"): intent "payment_made", direction "we_owe_supplier". When the shop owes a supplier ("X ko 8000 dena hai"): intent "payment_promise", direction "we_owe_supplier".
 - Watch the Hindi particle: "<name> NE ... bhej diye / de diye / kar diya" means that person paid the shop, so intent "payment_received", direction "customer_owes_us". Only "<name> KO ... bhej diye" (the shop sending money to them) is "payment_made".
+- A named person or shop followed by "ne" is the party, even when the message is about a payment ("Gupta store ne 3,500 ka payment kar diya hai": party "Gupta store").
 - Never invent values; use null when unsure.
 
 Examples:
@@ -75,6 +80,12 @@ Message: Payment bhej diya hai 8,000 ka
 
 Message: Anil ji ne 3,500 bhej diye
 {"intent":"payment_received","party":"Anil ji","items":[],"amount_inr":3500,"due_date":null,"due_date_text":null,"direction":"customer_owes_us","notes":null}
+
+Message: Gupta store ne 3,500 ka payment kar diya hai
+{"intent":"payment_received","party":"Gupta store","items":[],"amount_inr":3500,"due_date":null,"due_date_text":null,"direction":"customer_owes_us","notes":null}
+
+Message: Verma ji ne 2,000 UPI kar diye
+{"intent":"payment_received","party":"Verma ji","items":[],"amount_inr":2000,"due_date":null,"due_date_text":null,"direction":"customer_owes_us","notes":null}
 
 Message: Patel traders ko 6,000 dena hai
 {"intent":"payment_promise","party":"Patel traders","items":[],"amount_inr":6000,"due_date":null,"due_date_text":null,"direction":"we_owe_supplier","notes":null}
@@ -124,24 +135,36 @@ VALID_INTENTS = {"order", "payment_promise", "payment_received", "payment_made",
 VALID_DIRECTIONS = {None, "customer_owes_us", "we_owe_supplier"}
 
 
-def extract_message(message: str, attempts: int = 2) -> dict:
-    """Ask the model; if it returns an unusable result (e.g. null intent), retry."""
-    last = None
+def extract_with_meta(message: str, attempts: int = 2) -> tuple[dict, dict]:
+    """Like extract_message, but also returns {latency_ms, prompt_tokens, completion_tokens, attempts}."""
+    last, meta = None, {"latency_ms": 0, "prompt_tokens": 0, "completion_tokens": 0, "attempts": 0}
     for _ in range(attempts):
+        t0 = time.perf_counter()
         resp = client.chat.completions.create(
             model=TEXT_MODEL,
             messages=[{"role": "user", "content": build_message_prompt() + message}],
-            temperature=0,
+            temperature=0, **EXTRA,
         )
+        meta["latency_ms"] += int((time.perf_counter() - t0) * 1000)
+        meta["attempts"] += 1
+        usage = getattr(resp, "usage", None)
+        if usage:
+            meta["prompt_tokens"] += usage.prompt_tokens or 0
+            meta["completion_tokens"] += usage.completion_tokens or 0
         try:
             last = parse_json(resp.choices[0].message.content)
         except ValueError:
             continue
         if last.get("intent") in VALID_INTENTS and last.get("direction") in VALID_DIRECTIONS:
-            return last
+            return last, meta
     if last is None:
         raise ValueError("Model did not return JSON")
-    return last  # still invalid: the validator downstream sends it to review
+    return last, meta  # still invalid: the validator downstream sends it to review
+
+
+def extract_message(message: str, attempts: int = 2) -> dict:
+    """Ask the model; if it returns an unusable result (e.g. null intent), retry."""
+    return extract_with_meta(message, attempts)[0]
 
 
 def extract_invoice(image_path: str) -> dict:

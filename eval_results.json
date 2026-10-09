@@ -1,0 +1,960 @@
+{
+ "at": "2026-10-09 23:42",
+ "summary": {
+  "total": 28,
+  "correct": 27,
+  "accuracy": 96.4,
+  "wrong": 1,
+  "caught_before_ledger": 0,
+  "wrong_reached_ledger": 1,
+  "wrong_by_field": {
+   "direction": 1
+  },
+  "avg_latency_ms": 8222,
+  "p95_latency_ms": 13826,
+  "prompt_tokens": 38989,
+  "completion_tokens": 26949
+ },
+ "rows": [
+  {
+   "message": "bhai 20 kg sugar kal bhej dena",
+   "expected": {
+    "intent": "order",
+    "party": null,
+    "items": [
+     [
+      "sugar",
+      20
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": null,
+    "items": [
+     {
+      "name": "sugar",
+      "quantity": 20,
+      "unit": "kg"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": "2026-10-10",
+    "due_date_text": "kal",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 4498,
+   "prompt_tokens": 1339,
+   "completion_tokens": 407,
+   "attempts": 1
+  },
+  {
+   "message": "Sharma ji ka 4500 pending hai, bol rahe hain parso dedenge",
+   "expected": {
+    "intent": "payment_promise",
+    "party": "Sharma ji",
+    "amount": 4500,
+    "direction": "customer_owes_us"
+   },
+   "got": {
+    "intent": "payment_promise",
+    "party": "Sharma ji",
+    "items": [],
+    "amount_inr": 4500,
+    "due_date": "2026-10-11",
+    "due_date_text": "parso",
+    "direction": "customer_owes_us",
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 8697,
+   "prompt_tokens": 1348,
+   "completion_tokens": 903,
+   "attempts": 1
+  },
+  {
+   "message": "50 packet parle-g aur 10 dabba tel chahiye, Gupta store ke liye",
+   "expected": {
+    "intent": "order",
+    "party": "Gupta store",
+    "items": [
+     [
+      "parle-g",
+      50
+     ],
+     [
+      "tel",
+      10
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": "Gupta store",
+    "items": [
+     {
+      "name": "parle-g",
+      "quantity": 50,
+      "unit": "packet"
+     },
+     {
+      "name": "tel",
+      "quantity": 10,
+      "unit": "dabba"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": null,
+    "due_date_text": null,
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 7834,
+   "prompt_tokens": 1348,
+   "completion_tokens": 794,
+   "attempts": 1
+  },
+  {
+   "message": "Payment kar diya hai 12,000 ka, check kar lena",
+   "expected": {
+    "intent": "payment_received",
+    "party": null,
+    "amount": 12000,
+    "direction": "customer_owes_us"
+   },
+   "got": {
+    "intent": "payment_received",
+    "party": null,
+    "items": [],
+    "amount_inr": 12000,
+    "due_date": null,
+    "due_date_text": null,
+    "direction": "customer_owes_us",
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 3238,
+   "prompt_tokens": 1345,
+   "completion_tokens": 265,
+   "attempts": 1
+  },
+  {
+   "message": "Gupta store ko 30 kg chawal aur 10 kg dal bhej dena kal subah",
+   "expected": {
+    "intent": "order",
+    "party": "Gupta store",
+    "items": [
+     [
+      "chawal",
+      30
+     ],
+     [
+      "dal",
+      10
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": "Gupta store",
+    "items": [
+     {
+      "name": "chawal",
+      "quantity": 30,
+      "unit": "kg"
+     },
+     {
+      "name": "dal",
+      "quantity": 10,
+      "unit": "kg"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": "2026-10-10",
+    "due_date_text": "kal subah",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 9975,
+   "prompt_tokens": 1351,
+   "completion_tokens": 1099,
+   "attempts": 1
+  },
+  {
+   "message": "Ramesh bhai 15 kg chawal aur 5 kg dal, saturday tak",
+   "expected": {
+    "intent": "order",
+    "party": "Ramesh bhai",
+    "items": [
+     [
+      "chawal",
+      15
+     ],
+     [
+      "dal",
+      5
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": "Ramesh bhai",
+    "items": [
+     {
+      "name": "chawal",
+      "quantity": 15,
+      "unit": "kg"
+     },
+     {
+      "name": "dal",
+      "quantity": 5,
+      "unit": "kg"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": "2026-10-10",
+    "due_date_text": "saturday",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 11146,
+   "prompt_tokens": 1348,
+   "completion_tokens": 1241,
+   "attempts": 1
+  },
+  {
+   "message": "Kapoor traders ke liye 5 bori atta, parso tak chahiye",
+   "expected": {
+    "intent": "order",
+    "party": "Kapoor traders",
+    "items": [
+     [
+      "atta",
+      5
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": "Kapoor traders",
+    "items": [
+     {
+      "name": "atta",
+      "quantity": 5,
+      "unit": "bori"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": "2026-10-11",
+    "due_date_text": "parso",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 6217,
+   "prompt_tokens": 1345,
+   "completion_tokens": 663,
+   "attempts": 1
+  },
+  {
+   "message": "2 kg chai patti chahiye Sharma ji ko, aaj hi",
+   "expected": {
+    "intent": "order",
+    "party": "Sharma ji",
+    "items": [
+     [
+      "chai patti",
+      2
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": "Sharma ji",
+    "items": [
+     {
+      "name": "chai patti",
+      "quantity": 2,
+      "unit": "kg"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": "2026-10-09",
+    "due_date_text": "aaj hi",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 13034,
+   "prompt_tokens": 1343,
+   "completion_tokens": 1519,
+   "attempts": 1
+  },
+  {
+   "message": "Verma ji ko 10 kg maida aur 5 kg namak bhej dena kal",
+   "expected": {
+    "intent": "order",
+    "party": "Verma ji",
+    "items": [
+     [
+      "maida",
+      10
+     ],
+     [
+      "namak",
+      5
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": "Verma ji",
+    "items": [
+     {
+      "name": "maida",
+      "quantity": 10,
+      "unit": "kg"
+     },
+     {
+      "name": "namak",
+      "quantity": 5,
+      "unit": "kg"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": "2026-10-10",
+    "due_date_text": "kal",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 7192,
+   "prompt_tokens": 1348,
+   "completion_tokens": 830,
+   "attempts": 1
+  },
+  {
+   "message": "Kapoor traders ne 5,000 bhej diye",
+   "expected": {
+    "intent": "payment_received",
+    "party": "Kapoor traders",
+    "amount": 5000,
+    "direction": "customer_owes_us"
+   },
+   "got": {
+    "intent": "payment_received",
+    "party": "Kapoor traders",
+    "items": [],
+    "amount_inr": 5000,
+    "due_date": null,
+    "due_date_text": null,
+    "direction": "customer_owes_us",
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 4636,
+   "prompt_tokens": 1341,
+   "completion_tokens": 494,
+   "attempts": 1
+  },
+  {
+   "message": "Gupta store ne 3,500 ka payment kar diya hai",
+   "expected": {
+    "intent": "payment_received",
+    "party": "Gupta store",
+    "amount": 3500,
+    "direction": "customer_owes_us"
+   },
+   "got": {
+    "intent": "payment_received",
+    "party": "Gupta store",
+    "items": [],
+    "amount_inr": 3500,
+    "due_date": null,
+    "due_date_text": null,
+    "direction": "customer_owes_us",
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 2430,
+   "prompt_tokens": 1343,
+   "completion_tokens": 237,
+   "attempts": 1
+  },
+  {
+   "message": "Verma ji ka 2,000 baaki hai, 10 tarikh tak dega",
+   "expected": {
+    "intent": "payment_promise",
+    "party": "Verma ji",
+    "amount": 2000,
+    "direction": "customer_owes_us"
+   },
+   "got": {
+    "intent": "payment_promise",
+    "party": "Verma ji",
+    "items": [],
+    "amount_inr": 2000,
+    "due_date": "2026-10-10",
+    "due_date_text": "10 tarikh",
+    "direction": "we_owe_supplier",
+    "notes": null
+   },
+   "correct": false,
+   "wrong_fields": [
+    "direction"
+   ],
+   "reached_ledger": true,
+   "latency_ms": 21640,
+   "prompt_tokens": 1349,
+   "completion_tokens": 2821,
+   "attempts": 1
+  },
+  {
+   "message": "Mehta wholesale ko 8000 dena hai, 5 tarikh tak",
+   "expected": {
+    "intent": "payment_promise",
+    "party": "Mehta wholesale",
+    "amount": 8000,
+    "direction": "we_owe_supplier"
+   },
+   "got": {
+    "intent": "payment_promise",
+    "party": "Mehta wholesale",
+    "items": [],
+    "amount_inr": 8000,
+    "due_date": "2026-10-05",
+    "due_date_text": "5 tarikh",
+    "direction": "we_owe_supplier",
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 13826,
+   "prompt_tokens": 1345,
+   "completion_tokens": 1801,
+   "attempts": 1
+  },
+  {
+   "message": "Mehta wholesale ko 3,000 bhej diye",
+   "expected": {
+    "intent": "payment_made",
+    "party": "Mehta wholesale",
+    "amount": 3000,
+    "direction": "we_owe_supplier"
+   },
+   "got": {
+    "intent": "payment_made",
+    "party": "Mehta wholesale",
+    "items": [],
+    "amount_inr": 3000,
+    "due_date": null,
+    "due_date_text": null,
+    "direction": "we_owe_supplier",
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 4992,
+   "prompt_tokens": 1341,
+   "completion_tokens": 670,
+   "attempts": 1
+  },
+  {
+   "message": "Last time ka maal kharab tha, 3 bori atta wapas lena hai",
+   "expected": {
+    "intent": "complaint"
+   },
+   "got": {
+    "intent": "complaint",
+    "party": null,
+    "items": [
+     {
+      "name": "atta",
+      "quantity": 3,
+      "unit": "bori"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": null,
+    "due_date_text": null,
+    "direction": null,
+    "notes": "previous order had bad quality, request return of 3 bori atta"
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": false,
+   "latency_ms": 7399,
+   "prompt_tokens": 1345,
+   "completion_tokens": 977,
+   "attempts": 1
+  },
+  {
+   "message": "Rate kya chal raha hai basmati ka aajkal?",
+   "expected": {
+    "intent": "inquiry"
+   },
+   "got": {
+    "intent": "inquiry",
+    "party": null,
+    "items": [
+     {
+      "name": "basmati",
+      "quantity": null,
+      "unit": null
+     }
+    ],
+    "amount_inr": null,
+    "due_date": null,
+    "due_date_text": "aajkal",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 4711,
+   "prompt_tokens": 1342,
+   "completion_tokens": 562,
+   "attempts": 1
+  },
+  {
+   "message": "Gupta store: 20 packet parle-g aur 5 dabba tel, monday tak",
+   "expected": {
+    "intent": "order",
+    "party": "Gupta store",
+    "items": [
+     [
+      "parle-g",
+      20
+     ],
+     [
+      "tel",
+      5
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": "Gupta store",
+    "items": [
+     {
+      "name": "parle-g",
+      "quantity": 20,
+      "unit": "packet"
+     },
+     {
+      "name": "tel",
+      "quantity": 5,
+      "unit": "dabba"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": "2026-10-12",
+    "due_date_text": "monday",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 8708,
+   "prompt_tokens": 1347,
+   "completion_tokens": 1084,
+   "attempts": 1
+  },
+  {
+   "message": "Ramesh bhai ko 10 kg basmati chahiye shaam tak",
+   "expected": {
+    "intent": "order",
+    "party": "Ramesh bhai",
+    "items": [
+     [
+      "basmati",
+      10
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": "Ramesh bhai",
+    "items": [
+     {
+      "name": "basmati",
+      "quantity": 10,
+      "unit": "kg"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": null,
+    "due_date_text": null,
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 8503,
+   "prompt_tokens": 1346,
+   "completion_tokens": 1043,
+   "attempts": 1
+  },
+  {
+   "message": "Sharma ji ko 3 dabba tel bhej dena parso",
+   "expected": {
+    "intent": "order",
+    "party": "Sharma ji",
+    "items": [
+     [
+      "tel",
+      3
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": "Sharma ji",
+    "items": [
+     {
+      "name": "tel",
+      "quantity": 3,
+      "unit": "dabba"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": "2026-10-11",
+    "due_date_text": "parso",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 8625,
+   "prompt_tokens": 1342,
+   "completion_tokens": 1095,
+   "attempts": 1
+  },
+  {
+   "message": "Ramesh bhai ka 6,500 pending hai, saturday ko denge",
+   "expected": {
+    "intent": "payment_promise",
+    "party": "Ramesh bhai",
+    "amount": 6500,
+    "direction": "customer_owes_us"
+   },
+   "got": {
+    "intent": "payment_promise",
+    "party": "Ramesh bhai",
+    "items": [],
+    "amount_inr": 6500,
+    "due_date": "2026-10-10",
+    "due_date_text": "saturday",
+    "direction": "customer_owes_us",
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 20684,
+   "prompt_tokens": 2694,
+   "completion_tokens": 2404,
+   "attempts": 2
+  },
+  {
+   "message": "Verma ji ne 2,000 UPI kar diye",
+   "expected": {
+    "intent": "payment_received",
+    "party": "Verma ji",
+    "amount": 2000,
+    "direction": "customer_owes_us"
+   },
+   "got": {
+    "intent": "payment_received",
+    "party": "Verma ji",
+    "items": [],
+    "amount_inr": 2000,
+    "due_date": null,
+    "due_date_text": null,
+    "direction": "customer_owes_us",
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 2397,
+   "prompt_tokens": 1342,
+   "completion_tokens": 264,
+   "attempts": 1
+  },
+  {
+   "message": "Kapoor traders 25 kg sugar aur 10 kg dal, kal",
+   "expected": {
+    "intent": "order",
+    "party": "Kapoor traders",
+    "items": [
+     [
+      "sugar",
+      25
+     ],
+     [
+      "dal",
+      10
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": "Kapoor traders",
+    "items": [
+     {
+      "name": "sugar",
+      "quantity": 25,
+      "unit": "kg"
+     },
+     {
+      "name": "dal",
+      "quantity": 10,
+      "unit": "kg"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": "2026-10-10",
+    "due_date_text": "kal",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 6705,
+   "prompt_tokens": 1343,
+   "completion_tokens": 713,
+   "attempts": 1
+  },
+  {
+   "message": "Namak ke packet leak ho rahe hain, Gupta store ne complaint ki",
+   "expected": {
+    "intent": "complaint",
+    "party": "Gupta store"
+   },
+   "got": {
+    "intent": "complaint",
+    "party": "Gupta store",
+    "items": [
+     {
+      "name": "namak",
+      "quantity": null,
+      "unit": "packet"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": null,
+    "due_date_text": null,
+    "direction": null,
+    "notes": "leak issue"
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": false,
+   "latency_ms": 6405,
+   "prompt_tokens": 1342,
+   "completion_tokens": 655,
+   "attempts": 1
+  },
+  {
+   "message": "Verma ji ko 2 kg chai patti aur 5 kg dal chahiye, kal",
+   "expected": {
+    "intent": "order",
+    "party": "Verma ji",
+    "items": [
+     [
+      "chai patti",
+      2
+     ],
+     [
+      "dal",
+      5
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": "Verma ji",
+    "items": [
+     {
+      "name": "chai patti",
+      "quantity": 2,
+      "unit": "kg"
+     },
+     {
+      "name": "dal",
+      "quantity": 5,
+      "unit": "kg"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": "2026-10-10",
+    "due_date_text": "kal",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 8897,
+   "prompt_tokens": 1348,
+   "completion_tokens": 1017,
+   "attempts": 1
+  },
+  {
+   "message": "Kapoor traders ne 4,000 aur bhej diye",
+   "expected": {
+    "intent": "payment_received",
+    "party": "Kapoor traders",
+    "amount": 4000,
+    "direction": "customer_owes_us"
+   },
+   "got": {
+    "intent": "payment_received",
+    "party": "Kapoor traders",
+    "items": [],
+    "amount_inr": 4000,
+    "due_date": null,
+    "due_date_text": null,
+    "direction": "customer_owes_us",
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 7919,
+   "prompt_tokens": 1342,
+   "completion_tokens": 1055,
+   "attempts": 1
+  },
+  {
+   "message": "10 kg namak chahiye Ramesh bhai ko, aaj",
+   "expected": {
+    "intent": "order",
+    "party": "Ramesh bhai",
+    "items": [
+     [
+      "namak",
+      10
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": "Ramesh bhai",
+    "items": [
+     {
+      "name": "namak",
+      "quantity": 10,
+      "unit": "kg"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": "2026-10-09",
+    "due_date_text": "aaj",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 8649,
+   "prompt_tokens": 1344,
+   "completion_tokens": 1107,
+   "attempts": 1
+  },
+  {
+   "message": "Kal shop band rahegi, sabko bata dena",
+   "expected": {
+    "intent": "other"
+   },
+   "got": {
+    "intent": "other",
+    "party": null,
+    "items": [],
+    "amount_inr": null,
+    "due_date": "2026-10-10",
+    "due_date_text": "Kal",
+    "direction": null,
+    "notes": "shop will be closed tomorrow, inform everyone"
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": false,
+   "latency_ms": 5808,
+   "prompt_tokens": 1339,
+   "completion_tokens": 697,
+   "attempts": 1
+  },
+  {
+   "message": "bhaiya 5 kg sugar kal bhej dena",
+   "expected": {
+    "intent": "order",
+    "party": null,
+    "items": [
+     [
+      "sugar",
+      5
+     ]
+    ]
+   },
+   "got": {
+    "intent": "order",
+    "party": null,
+    "items": [
+     {
+      "name": "sugar",
+      "quantity": 5,
+      "unit": "kg"
+     }
+    ],
+    "amount_inr": null,
+    "due_date": "2026-10-10",
+    "due_date_text": "kal",
+    "direction": null,
+    "notes": null
+   },
+   "correct": true,
+   "wrong_fields": [],
+   "reached_ledger": true,
+   "latency_ms": 5474,
+   "prompt_tokens": 1339,
+   "completion_tokens": 532,
+   "attempts": 1
+  }
+ ]
+}
