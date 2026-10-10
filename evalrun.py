@@ -17,7 +17,9 @@ from concurrent.futures import ThreadPoolExecutor
 import db
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SET_PATH = os.path.join(HERE, "eval_set.json")
+SETS = [("demo", os.path.join(HERE, "eval_set.json")),          # the 28 demo messages (prompt was tuned on this kind)
+        ("holdout", os.path.join(HERE, "eval_holdout.json"))]   # 20 messages written after the prompt was frozen
+SET_PATH = SETS[0][1]
 RESULT_PATH = os.path.join(HERE, "eval_results.json")
 
 
@@ -67,9 +69,13 @@ def summarize(rows: list[dict]) -> dict:
     return {
         "total": n, "correct": ok, "accuracy": round(ok / n * 100, 1) if n else 0,
         "wrong": len(wrong),
+        "guard_fixed": sum(1 for r in rows if r.get("guard_fixed")),
         "caught_before_ledger": sum(1 for r in wrong if not r["reached_ledger"]),
         "wrong_reached_ledger": sum(1 for r in wrong if r["reached_ledger"]),
         "wrong_by_field": by_field,
+        "by_set": {name: {"total": sum(1 for r in rows if r.get("set") == name),
+                          "correct": sum(1 for r in rows if r.get("set") == name and r["correct"])}
+                   for name in dict.fromkeys(r.get("set") for r in rows if r.get("set"))},
         "avg_latency_ms": int(statistics.mean(lat)) if lat else 0,
         "p95_latency_ms": int(sorted(lat)[max(0, int(len(lat) * .95) - 1)]) if lat else 0,
         "prompt_tokens": sum(r.get("prompt_tokens", 0) for r in rows),
@@ -77,19 +83,27 @@ def summarize(rows: list[dict]) -> dict:
     }
 
 
+def load_labels() -> list[dict]:
+    out = []
+    for name, path in SETS:
+        if os.path.exists(path):
+            with open(path, encoding="utf-8") as f:
+                out += [dict(l, set=name) for l in json.load(f)]
+    return out
+
+
 def run(extract_fn, progress=None, workers: int = 4) -> dict:
     """extract_fn(message) -> (extraction_dict, meta_dict). Returns {summary, rows, at}."""
-    with open(SET_PATH, encoding="utf-8") as f:
-        labels = json.load(f)
+    labels = load_labels()
 
     def one(label):
         try:
             got, meta = extract_fn(label["m"])
             wrong = score(label, got)
-            row = {"message": label["m"], "expected": {k: v for k, v in label.items() if k != "m"}, "got": got,
+            row = {"message": label["m"], "set": label["set"], "expected": {k: v for k, v in label.items() if k not in ("m", "set")}, "got": got,
                    "correct": not wrong, "wrong_fields": wrong, "reached_ledger": reaches_ledger(got), **meta}
         except Exception as e:
-            row = {"message": label["m"], "expected": label, "got": {}, "correct": False,
+            row = {"message": label["m"], "set": label["set"], "expected": label, "got": {}, "correct": False,
                    "wrong_fields": ["error"], "reached_ledger": False, "error": str(e)}
         if progress:
             progress(row)
@@ -115,6 +129,8 @@ if __name__ == "__main__":
     from extract import extract_with_meta
     res = run(extract_with_meta, progress=lambda r: print("ok  " if r["correct"] else "MISS", r["message"], r["wrong_fields"] or ""))
     s = res["summary"]
+    for name, v in s.get("by_set", {}).items():
+        print(f"  {name}: {v['correct']}/{v['total']}")
     print(f"\n{s['correct']}/{s['total']} correct ({s['accuracy']}%). Wrong: {s['wrong']}, "
-          f"stopped before the ledger: {s['caught_before_ledger']}, wrote wrong data: {s['wrong_reached_ledger']}.")
+          f"grammar guard corrected {s['guard_fixed']}, stopped before the ledger: {s['caught_before_ledger']}, wrote wrong data: {s['wrong_reached_ledger']}.")
     print(f"Latency avg {s['avg_latency_ms']} ms, p95 {s['p95_latency_ms']} ms. Tokens {s['prompt_tokens']} in / {s['completion_tokens']} out.")
