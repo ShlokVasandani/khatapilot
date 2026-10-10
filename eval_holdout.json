@@ -1,0 +1,22 @@
+[
+ {"m":"Agarwal sweets ne 7,500 bhej diye","intent":"payment_received","party":"Agarwal sweets","amount":7500,"direction":"customer_owes_us"},
+ {"m":"Joshi ji ka 1,800 baaki hai, 15 tarikh tak denge","intent":"payment_promise","party":"Joshi ji","amount":1800,"direction":"customer_owes_us"},
+ {"m":"Bansal stores ko 12 kg atta aur 3 dabba ghee bhej dena kal","intent":"order","party":"Bansal stores","items":[["atta",12],["ghee",3]]},
+ {"m":"Rawat traders ko 9,000 dena hai","intent":"payment_promise","party":"Rawat traders","amount":9000,"direction":"we_owe_supplier"},
+ {"m":"Rawat traders ko 4,000 de diye","intent":"payment_made","party":"Rawat traders","amount":4000,"direction":"we_owe_supplier"},
+ {"m":"bhai 8 packet biscuit aur 2 kg cheeni chahiye","intent":"order","party":null,"items":[["biscuit",8],["cheeni",2]]},
+ {"m":"Nair ji ne 600 ka UPI kiya","intent":"payment_received","party":"Nair ji","amount":600,"direction":"customer_owes_us"},
+ {"m":"Maal late aaya, Iyer store bahut naraz hai","intent":"complaint","party":"Iyer store"},
+ {"m":"Doodh ka rate aaj kya hai?","intent":"inquiry"},
+ {"m":"Desai bhai ko 20 litre tel bhej do parso","intent":"order","party":"Desai bhai","items":[["tel",20]]},
+ {"m":"Menon traders ka 3,200 pending hai, monday ko denge","intent":"payment_promise","party":"Menon traders","amount":3200,"direction":"customer_owes_us"},
+ {"m":"Kal Diwali ki chhutti hai","intent":"other"},
+ {"m":"Chopra ji ke liye 6 bori chawal chahiye aaj","intent":"order","party":"Chopra ji","items":[["chawal",6]]},
+ {"m":"Saxena store ne 15,000 ka cheque bheja hai","intent":"payment_received","party":"Saxena store","amount":15000,"direction":"customer_owes_us"},
+ {"m":"Pillai wholesale ko 2,500 bhej diye","intent":"payment_made","party":"Pillai wholesale","amount":2500,"direction":"we_owe_supplier"},
+ {"m":"5 dabba haldi aur 2 kg jeera Tiwari ji ko bhej dena","intent":"order","party":"Tiwari ji","items":[["haldi",5],["jeera",2]]},
+ {"m":"Kulkarni ji ka 11,000 baaki hai","intent":"payment_promise","party":"Kulkarni ji","amount":11000,"direction":"customer_owes_us"},
+ {"m":"Shetty traders ne payment kar diya, 6,000","intent":"payment_received","party":"Shetty traders","amount":6000,"direction":"customer_owes_us"},
+ {"m":"Packet phate hue the, Reddy store wapas karna chahta hai","intent":"complaint","party":"Reddy store"},
+ {"m":"Bhatia ji ko 4 kg mirch aur 4 kg dhaniya, shaam tak","intent":"order","party":"Bhatia ji","items":[["mirch",4],["dhaniya",4]]}
+]

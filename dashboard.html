@@ -602,12 +602,16 @@ function accView(s) {
     return [el("div", {className: "progress", textContent: `Running ${e.total} labelled messages through Nemotron: ${e.done} done`}), bar];
   }
   if (e.error) out.push(el("div", {className: "err", textContent: e.error}));
-  if (!L) return [...out, empty("target", "Run the evaluation to score Nemotron on 28 hand-labelled Hinglish messages.")];
+  if (!L) return [...out, empty("target", "Run the evaluation to score Nemotron on 48 hand-labelled Hinglish messages, 20 of them written after the prompt was frozen.")];
   const ring = el("div", {className: "ring"}, el("span", {textContent: Math.round(L.accuracy) + "%"}));
   ring.style.setProperty("--p", L.accuracy);
   out.push(el("div", {className: "acc"}, ring, el("p", {},
     el("b", {textContent: `${L.correct} of ${L.total} correct`}),
     ` on hand-labelled Hinglish messages. Right means intent, party, amount, direction and items all match. Last run ${L.at}.`)));
+  const bs = L.by_set || {};
+  if (bs.holdout) out.push(el("div", {className: "kv", style: "margin-top:10px"},
+    el("span", {}, "demo set ", el("b", {textContent: `${bs.demo.correct}/${bs.demo.total}`})),
+    el("span", {}, "fresh set ", el("b", {textContent: `${bs.holdout.correct}/${bs.holdout.total}`}))));
   if (L.misses.length) {
     out.push(el("div", {className: "sub-h", textContent: `${L.misses.length} wrong ${L.misses.length === 1 ? "answer" : "answers"}`}));
     L.misses.forEach(m => out.push(el("div", {className: "miss"}, el("q", {textContent: m.message}),
@@ -627,7 +631,7 @@ function perfView(s) {
     st("Tokens per message", n ? Math.round((tin + tout) / n).toLocaleString() : "n/a", n ? `${Math.round(tin / n)} in · ${Math.round(tout / n)} out` : ""),
     st("Tokens used", (tin + tout).toLocaleString(), live ? "this session" : L ? "last evaluation" : ""),
     st("Cost per 1,000 messages", p.cost_per_1000 != null ? "$" + p.cost_per_1000 : "n/a", p.cost_per_1000 != null ? "" : "set prices in settings.env")),
-    el("p", {className: "note", style: "margin:12px 0 0", textContent: "Served by Nemotron on Nebius Token Factory. Reasoning stays on for accuracy: switching it off was about 7x faster but dropped accuracy from 96% to 57% in our test."})];
+    el("p", {className: "note", style: "margin:12px 0 0", textContent: "Served by Nemotron on Nebius Token Factory. Reasoning stays on for accuracy: switching it off was about 7x faster but dropped accuracy to 57% on the demo set."})];
 }
 
 function render(s) {
@@ -825,7 +829,7 @@ const STEPS = [
   {sel: "c-safety", title: "3. The model never has the last word", body: "The model reads, code validates, and a person presses send. Nothing here is ever sent automatically."},
   {sel: "c-brief", title: "4. Morning briefing", body: "Nemotron writes the owner's briefing from ledger facts. Every number it uses is checked against the books, and it falls back to plain text if one is wrong.", action: "Write the briefing", run: () => askBrief("english")},
   {sel: "c-coll", title: "5. One-click reminders", body: "Customer reminders are built by code from the closing balances, never by the model, because they contain money. Press Open WhatsApp and send it yourself.", at: () => document.querySelector("#coll .coll")},
-  {sel: "c-acc", title: "6. Measured, not claimed", body: "28 hand-labelled Hinglish messages scored against Nemotron. Press Run evaluation any time to reproduce the number.", at: null},
+  {sel: "c-acc", title: "6. Measured, not claimed", body: "48 hand-labelled Hinglish messages scored against Nemotron, 20 of them written after the prompt was frozen. Press Run evaluation any time to reproduce the number.", at: null},
   {sel: "c-perf", title: "7. Fast and cheap on Nebius", body: "Latency and tokens per message are tracked live, so you can see what it costs to run this for a real shop."},
   {title: "That is KhataPilot", body: "WhatsApp in, ledger and briefing out, a human on every send. Thanks for watching.", sel: null},
 ];

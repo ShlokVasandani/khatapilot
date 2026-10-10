@@ -55,13 +55,23 @@ def reset_demo() -> None:
         STATS[k] = 0
 
 
+class _Duplicate(Exception):
+    pass
+
+
 def process_message(conn, msg: str) -> dict:
     """Extract one message with Nemotron and apply it to the ledger. Never raises."""
     ex, meta, failed = {}, {}, None
     try:
+        if db.recent_duplicate(conn, msg):
+            result = db._to_review(conn, msg, {}, "possible duplicate: this exact message was recorded in the last "
+                                   "10 minutes. If it is a new one, send it again with a small change, e.g. add the time.")
+            raise _Duplicate
         from extract import extract_with_meta  # imported late so the page loads without an API key
         ex, meta = extract_with_meta(msg)
         result = db.apply_extraction(conn, msg, ex)
+    except _Duplicate:
+        pass
     except Exception as e:
         failed = str(e)
         result = db._to_review(conn, msg, {}, f"extraction failed: {e}")
@@ -93,7 +103,7 @@ def perf() -> dict:
 def _eval_job() -> None:
     from extract import extract_with_meta
     try:
-        EVAL.update(running=True, done=0, total=len(__import__("json").load(open(evalrun.SET_PATH, encoding="utf-8"))), error=None)
+        EVAL.update(running=True, done=0, total=len(evalrun.load_labels()), error=None)
         evalrun.run(extract_with_meta, progress=lambda r: EVAL.__setitem__("done", EVAL["done"] + 1))
     except Exception as e:
         EVAL["error"] = str(e)
@@ -134,7 +144,7 @@ def state(conn) -> dict:
 def _eval_summary():
     last = evalrun.load_last()
     return last and {"at": last["at"], **last["summary"], "misses": [
-        {"message": r["message"], "wrong_fields": r["wrong_fields"], "reached_ledger": r["reached_ledger"]}
+        {"message": r["message"], "set": r.get("set"), "wrong_fields": r["wrong_fields"], "reached_ledger": r["reached_ledger"]}
         for r in last["rows"] if not r["correct"]]}
 
 

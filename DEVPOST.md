@@ -17,8 +17,10 @@ are built by code with no model involved. Every number in a model-written briefi
 is discarded if one is wrong.
 
 ## How we know it works
-28 hand-labelled Hinglish messages, scored automatically (`python evalrun.py`): **27 of 28 correct (96.4%)**.
-Switching Nemotron's reasoning off was about 7x faster but fell to 57%, so we keep it on and say so. The dashboard shows per-message
+48 hand-labelled Hinglish messages, scored automatically (`python evalrun.py`), 20 of them written after the prompt was frozen.
+Nemotron plus our validation code scores **92% to 98%** across four runs (held-out set 85% to 95%). Two Hindi grammar guards
+bring it to 48/48 in three runs, but we wrote them after seeing the misses, so we treat that as in-sample and say so.
+Switching Nemotron's reasoning off was about 7x faster but fell to 57%, so we keep it on. The dashboard shows per-message
 latency, tokens and cost per 1,000 messages.
 
 ## Built with
