@@ -13,7 +13,7 @@ KhataPilot
 - Live demo (free, no key): https://shlokvasandani.github.io/khatapilot/demo/
 - Website: https://shlokvasandani.github.io/khatapilot/
 - Code (MIT): https://github.com/ShlokVasandani/khatapilot
-- Demo video: https://youtu.be/cKQkH5cB7Wo
+- Demo video: https://youtu.be/0TfvFX7GkJY
 - Feedback: https://github.com/ShlokVasandani/khatapilot/blob/main/FEEDBACK.md
 
 ## Inspiration
@@ -86,7 +86,7 @@ NVIDIA Nemotron-3-Nano-30B-A3B, Nebius Token Factory, Python, SQLite, HTML/CSS/J
 - [ ] Log in to Devpost and press **Join hackathon**, then **Enter a submission**
 - [ ] Track: **Best Apps and Agents**
 - [ ] Paste the sections above (name, pitch, story, built with, links)
-- [ ] Demo video URL (public YouTube, 3 minutes or less): the narrated walkthrough is `khatapilot-demo.mp4`
+- [ ] Demo video URL (public YouTube, 3 minutes or less): the narrated walkthrough is `khatapilot-launch.mp4` (2:09)
 - [ ] Demo URL: https://shlokvasandani.github.io/khatapilot/demo/
 - [ ] Code URL: https://github.com/ShlokVasandani/khatapilot (public, MIT shown at the top of the repo page)
 - [ ] Feedback sections: paste from `FEEDBACK.md`

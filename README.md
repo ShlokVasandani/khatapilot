@@ -23,7 +23,7 @@ the demo; the pipeline is language-agnostic and the briefing already switches be
 
 - **Live demo (free, no key):** https://shlokvasandani.github.io/khatapilot/demo/ is the real dashboard replaying real
   Nemotron outputs saved from our runs. No model is called, so it costs nothing. Website: https://shlokvasandani.github.io/khatapilot/
-- **Demo video (2:14):** https://youtu.be/cKQkH5cB7Wo (a narrated walkthrough made from real screens of the hosted demo; the voice is synthetic).
+- **Demo video (2:09):** https://youtu.be/0TfvFX7GkJY (a narrated walkthrough of the hosted demo with real saved Nemotron outputs; ElevenLabs voice, synthesized soundtrack).
 - **Run it live with your own key:** [Run it](#run-it) below.
 
 ## Nemotron and Nebius Token Factory, in one place
