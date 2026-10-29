@@ -13,7 +13,7 @@ KhataPilot
 - Live demo (free, no key): https://shlokvasandani.github.io/khatapilot/demo/
 - Website: https://shlokvasandani.github.io/khatapilot/
 - Code (MIT): https://github.com/ShlokVasandani/khatapilot
-- Demo video: <PASTE YOUTUBE URL>
+- Demo video: https://youtu.be/cKQkH5cB7Wo
 - Feedback: https://github.com/ShlokVasandani/khatapilot/blob/main/FEEDBACK.md
 
 ## Inspiration
