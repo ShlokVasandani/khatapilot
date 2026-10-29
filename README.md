@@ -19,6 +19,28 @@ the demo; the pipeline is language-agnostic and the briefing already switches be
 
 ![Dashboard](docs/dashboard.png)
 
+## Try it
+
+- **Live demo (free, no key):** https://shlokvasandani.github.io/khatapilot/demo/ is the real dashboard replaying real
+  Nemotron outputs saved from our runs. No model is called, so it costs nothing. Website: https://shlokvasandani.github.io/khatapilot/
+- **Demo video (3 minutes):** see the link in [DEVPOST.md](DEVPOST.md).
+- **Run it live with your own key:** [Run it](#run-it) below.
+
+## Nemotron and Nebius Token Factory, in one place
+
+- **Model:** NVIDIA **Nemotron-3-Nano-30B-A3B**, served by **Nebius Token Factory** (OpenAI-compatible, pay-per-token).
+  The standard `openai` client works unchanged; only the base URL, key and model ID differ (`settings.env`).
+- **Three jobs Nemotron does here:** (1) reads each Hinglish message into structured JSON (`extract.py`, reasoning on,
+  schema + rules + examples); (2) writes the morning briefing in English, Hinglish or Hindi (`narrate.py`); (3) words the
+  supplier reorder message (`drafts.py`). Code owns every number and every write to the ledger.
+- **What Token Factory gave us (measured):** pay-per-token made it cheap to re-run a 48-message evaluation many times;
+  the `enable_thinking` switch let us measure the trade-off (about 7x faster with reasoning off, but 57% accuracy versus
+  92% to 98%); parallel requests (4 at a time) scored the evaluation in about a minute; per-message latency and token
+  counts shown live in the dashboard come straight from the API's usage field.
+- **Other Nebius services used:** Token Factory only. See [FEEDBACK.md](FEEDBACK.md) for our full feedback on Token
+  Factory and Nemotron.
+- **Built during the submission period:** the first commit is dated 2 Oct 2026, so the whole project is new.
+
 ## How it works
 
 ```mermaid
