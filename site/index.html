@@ -82,17 +82,17 @@
     <h2 class="sec__title" data-decrypt>The model reads. Code decides. You send.</h2>
     <div class="steps">
       <article class="step">
-        <div class="step__art"><img src="assets/trace.png" alt="The "How Nemotron read it" panel: a message, its plain-English reading, extracted fields, time and tokens, and a "Written to ledger" tag" width="358" height="416" loading="lazy"></div>
+        <div class="step__art"><img src="assets/trace.png" alt="The "How Nemotron read it" panel: a message, its plain-English reading, extracted fields, time and tokens, and a "Written to ledger" tag" width="831" height="435" loading="lazy"></div>
         <h3>Nemotron reads</h3>
         <p>It turns Hinglish like <i>"Kapoor traders ne 3,000 bhej diye"</i> into structured data: who, what, how much, by when. That is all it does.</p>
       </article>
       <article class="step">
-        <div class="step__art"><img src="assets/decision.png" alt="The "Needs your decision" queue listing messages the code held back, each with the reason" width="398" height="357" loading="lazy"></div>
+        <div class="step__art"><img src="assets/decision.png" alt="The "Needs your decision" queue listing messages the code held back, each with the reason" width="535" height="317" loading="lazy"></div>
         <h3>Code decides</h3>
         <p>Every field is validated before the ledger changes. Unclear messages, complaints and unknown payers wait in a queue for you.</p>
       </article>
       <article class="step">
-        <div class="step__art"><img src="assets/reminder.png" alt="A reminder for Kapoor traders listing the unpaid bill and total, marked "written by code, not AI", with an Open WhatsApp button" width="556" height="374" loading="lazy"></div>
+        <div class="step__art"><img src="assets/reminder.png" alt="A reminder for Kapoor traders listing the unpaid bill and total, marked "written by code, not AI", with an Open WhatsApp button" width="831" height="354" loading="lazy"></div>
         <h3>You press send</h3>
         <p>Reminders list each unpaid bill and the total. Code writes the money, never the model. WhatsApp opens with the text filled in.</p>
       </article>
@@ -104,11 +104,12 @@
 <section class="expand" id="dashboard" aria-label="The dashboard">
   <div class="expand__stick">
     <div class="expand__frame" id="expandFrame">
-      <img src="assets/dashboard.png" alt="KhataPilot dashboard showing money to collect, how Nemotron read each message, the morning briefing and reminder messages" width="1440" height="1500">
+      <a class="expand__link" href="demo/" aria-label="Open the live dashboard demo"><img src="assets/dashboard.png" alt="KhataPilot dashboard showing money to collect, how Nemotron read each message, the morning briefing and reminder messages" width="1440" height="1500"></a>
       <div class="expand__veil"></div>
       <div class="expand__text" id="expandText">
         <h2>The whole back office on one screen.</h2>
-        <p>Money to collect, what to reorder, who to remind, and exactly how every message was read. <a href="demo/" style="text-decoration:underline">Open the live demo</a>.</p>
+        <p>Money to collect, what to reorder, who to remind, and exactly how every message was read.</p>
+        <a class="btn btn--primary expand__cta" href="demo/">Open the dashboard</a>
       </div>
     </div>
   </div>
@@ -178,6 +179,10 @@
 <footer class="close" id="close" data-dark>
   <div class="wrap">
     <h2 class="close__lede" data-decrypt>Run it in four lines.</h2>
+    <div class="close__actions">
+      <a class="btn btn--primary" href="demo/">Open the live demo</a>
+      <a class="btn btn--ghost" href="https://github.com/ShlokVasandani/khatapilot" rel="noopener">View the code</a>
+    </div>
     <div class="cmd">
       <pre id="cmdText" tabindex="0">git clone https://github.com/ShlokVasandani/khatapilot
 cd khatapilot &amp;&amp; python -m venv .venv &amp;&amp; source .venv/bin/activate
