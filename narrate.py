@@ -22,7 +22,7 @@ TOTAL_RE = re.compile(r"\d[\d,]*(?:\.\d+)?")
 PROMPT = """You are the back-office assistant of a small Indian shop. Write the owner's \
 morning briefing from the FACTS below.
 
-Style: <<LANG>>. Short and warm, like a trusted munim ji talking. Start with "Namaste" (or "नमस्ते" in Hindi) (never \
+Style: <<LANG>>. Short and warm, like a trusted munim ji talking. Start with "Namaste" (never \
 "sir" or "boss"). Plain text only, no markdown, no tables. Use at most 120 words.
 <<EXAMPLE>>
 
@@ -35,6 +35,7 @@ Hard rules:
 - Write rupee amounts in full as Rs 14,000, not 14k.
 - "reorder_at" is the stock level at which the shop reorders. Say "only 10 kg left", never "restock at 40 kg".
 - Do not mention anything that is not in the FACTS.
+- Never write field names such as low_stock, reorder_at or overdue_total. Write plain sentences. If a list is empty, say that nothing needs attention there (for example "Stock is fine, nothing to reorder").
 
 FACTS:
 <<FACTS>>

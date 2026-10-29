@@ -287,6 +287,28 @@ def test_eval_ledger_gate_and_summary():
     assert s["accuracy"] == 50.0 and s["caught_before_ledger"] == 1 and s["wrong_reached_ledger"] == 0
 
 
+def test_ne_ko_guard_and_duplicate_guard():
+    import re
+    src = open("extract.py", encoding="utf-8").read()
+    ns = {"re": re}
+    exec(src[src.index("NE_RE ="):src.index("def extract_with_meta")], ns)
+    fix = ns["fix_particle"]
+    e = {"intent": "payment_made", "direction": "we_owe_supplier"}
+    assert fix("Kapoor traders ne 5,000 bhej diye", e) and e["intent"] == "payment_received"
+    e = {"intent": "payment_made", "direction": "we_owe_supplier"}
+    assert not fix("Mehta wholesale ko 3,000 bhej diye", e) and e["intent"] == "payment_made"
+    e = {"intent": "payment_made", "direction": "we_owe_supplier"}
+    assert not fix("Gupta ne Mehta ko 3,000 bheja", e)
+    e = {"intent": "payment_promise", "direction": "we_owe_supplier"}
+    assert fix("Ramesh bhai ka 6,500 pending hai, saturday ko denge", e) and e["direction"] == "customer_owes_us"
+    e = {"intent": "payment_promise", "direction": "we_owe_supplier"}
+    assert not fix("Mehta wholesale ko 8000 dena hai, 5 tarikh tak", e)
+    c = fresh()
+    db.apply_extraction(c, "Kapoor traders ne 1000 bhej diye", ex(intent="payment_received", party="Kapoor traders", amount_inr=1000))
+    assert db.recent_duplicate(c, "  kapoor TRADERS ne 1000   bhej diye ")
+    assert not db.recent_duplicate(c, "Kapoor traders ne 2000 bhej diye")
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     for t in tests:

@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KhataPilot: your shop already runs on WhatsApp</title>
+<meta name="description" content="KhataPilot reads Hinglish shop messages with NVIDIA Nemotron on Nebius, keeps the ledger in code, and prepares reminders for the owner to send. The model reads, code decides, you press send.">
+<meta property="og:title" content="KhataPilot">
+<meta property="og:description" content="WhatsApp in, ledger and briefing out, a human on every send.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23b3261e'/%3E%3Cpath d='M9 7v18M9 16.5L19.5 7M12 14l9 11' stroke='%23fff' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Afacad:wght@400;500;600;700&family=Outfit:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav" data-open="false">
+  <div class="nav__sheen"></div>
+  <a class="nav__logo" href="#top" aria-label="KhataPilot home">
+    <span class="mark" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7v18M9 16.5L19.5 7M12 14l9 11"/></svg></span>
+    <span class="nav__name">KhataPilot</span>
+  </a>
+  <button class="nav__toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Menu"><i></i><i></i></button>
+  <nav class="nav__links" id="navLinks" aria-label="Main">
+    <span class="nav__blob" aria-hidden="true"></span>
+    <a href="#how">How it works</a>
+    <a href="demo/">Live demo</a>
+    <a href="#trust">Trust</a>
+    <a href="#languages">Languages</a>
+    <a href="#faq">Questions</a>
+    <a class="nav__cta" href="https://github.com/ShlokVasandani/khatapilot" rel="noopener">GitHub</a>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <h1 class="hero__title" data-decrypt>Your shop already runs on WhatsApp.</h1>
+    <p class="hero__lede">KhataPilot reads the messages, keeps the books, and gets tomorrow's reminders ready. You press send.</p>
+    <div class="hero__actions">
+      <a class="btn btn--primary" href="demo/">Open the live demo</a>
+      <a class="btn btn--ghost" href="#try">Try a real message</a>
+    </div>
+  </div>
+
+  <!-- the live thing -->
+  <div class="wrap try" id="try">
+    <div class="try__head">
+      <h2 class="try__title">Tap a message. Watch it become a ledger entry.</h2>
+      <p class="muted">These are real answers from Nemotron on Nebius, saved from our test runs. Nothing is sent anywhere.</p>
+    </div>
+    <div class="try__grid">
+      <div class="chat" aria-label="WhatsApp messages">
+        <div class="chat__bar"><span class="chat__dot"></span>Customers<small>tap one to send it</small></div>
+        <div class="chat__log" id="chatLog" aria-live="polite"></div>
+        <div class="chat__chips" id="chips" role="group" aria-label="Pick a message"></div>
+      </div>
+      <div class="read" id="read" aria-live="polite">
+        <div class="read__col">
+          <h3>Nemotron read</h3>
+          <dl class="fields" id="fields"></dl>
+          <p class="read__time" id="readTime"></p>
+        </div>
+        <div class="read__col">
+          <h3>Code checked</h3>
+          <ul class="checks" id="checks"></ul>
+        </div>
+        <div class="read__result" id="result"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section class="sec" id="how">
+  <div class="wrap">
+    <h2 class="sec__title" data-decrypt>The model reads. Code decides. You send.</h2>
+    <div class="steps">
+      <article class="step">
+        <div class="step__art"><img src="assets/trace.png" alt="The "How Nemotron read it" panel: a message, its plain-English reading, extracted fields, time and tokens, and a "Written to ledger" tag" width="358" height="416" loading="lazy"></div>
+        <h3>Nemotron reads</h3>
+        <p>It turns Hinglish like <i>"Kapoor traders ne 3,000 bhej diye"</i> into structured data: who, what, how much, by when. That is all it does.</p>
+      </article>
+      <article class="step">
+        <div class="step__art"><img src="assets/decision.png" alt="The "Needs your decision" queue listing messages the code held back, each with the reason" width="398" height="357" loading="lazy"></div>
+        <h3>Code decides</h3>
+        <p>Every field is validated before the ledger changes. Unclear messages, complaints and unknown payers wait in a queue for you.</p>
+      </article>
+      <article class="step">
+        <div class="step__art"><img src="assets/reminder.png" alt="A reminder for Kapoor traders listing the unpaid bill and total, marked "written by code, not AI", with an Open WhatsApp button" width="556" height="374" loading="lazy"></div>
+        <h3>You press send</h3>
+        <p>Reminders list each unpaid bill and the total. Code writes the money, never the model. WhatsApp opens with the text filled in.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD: photo expansion -->
+<section class="expand" id="dashboard" aria-label="The dashboard">
+  <div class="expand__stick">
+    <div class="expand__frame" id="expandFrame">
+      <img src="assets/dashboard.png" alt="KhataPilot dashboard showing money to collect, how Nemotron read each message, the morning briefing and reminder messages" width="1440" height="1500">
+      <div class="expand__veil"></div>
+      <div class="expand__text" id="expandText">
+        <h2>The whole back office on one screen.</h2>
+        <p>Money to collect, what to reorder, who to remind, and exactly how every message was read. <a href="demo/" style="text-decoration:underline">Open the live demo</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section class="sec sec--dark" id="trust" data-dark>
+  <div class="wrap">
+    <h2 class="sec__title" data-decrypt>Measured, and honest about it.</h2>
+    <div class="stats">
+      <div class="stat">
+        <b class="stat__n" data-count="92" data-to="98" data-suffix="%">92 to 98%</b>
+        <p>of 48 hand-labelled Hinglish messages read exactly right by Nemotron plus our validation code, across four runs.</p>
+      </div>
+      <div class="stat">
+        <b class="stat__n" data-count="57" data-suffix="%">57%</b>
+        <p>is what it scores with Nemotron's reasoning switched off. About 7x faster, far less reliable. We keep it on.</p>
+      </div>
+      <div class="stat">
+        <b class="stat__n" data-count="0">0</b>
+        <p>messages sent automatically. A person presses send on every reminder and every supplier order.</p>
+      </div>
+    </div>
+    <div class="notes">
+      <p><b>Where it misses.</b> Almost always a wrong <i>direction</i> on messages like "X ka 6,500 pending hai, saturday ko denge". For a customer already in the ledger, code corrects it from their record.</p>
+      <p><b>What we won't claim.</b> Two grammar guards bring the score to 48 of 48, but we wrote them after seeing those misses, so that number is partly in-sample. The model-alone range above is the honest one. 20 of the 48 messages were written after the prompt was frozen; the model scored 85% to 95% on those.</p>
+    </div>
+  </div>
+</section>
+
+<!-- LANGUAGES -->
+<section class="sec" id="languages">
+  <div class="wrap">
+    <h2 class="sec__title" data-decrypt>Hinglish is the hardest case.</h2>
+    <p class="sec__lede">Shopkeepers write the way they talk, mixing Hindi and English in Roman script. The same briefing comes out in whichever language the owner prefers, and every figure is checked against the ledger before it is shown.</p>
+    <div class="lang">
+      <div class="lang__tabs" role="tablist" aria-label="Briefing language">
+        <button role="tab" aria-selected="true" data-lang="english">English</button>
+        <button role="tab" aria-selected="false" data-lang="hinglish">Hinglish</button>
+        <button role="tab" aria-selected="false" data-lang="hindi" lang="hi">हिन्दी</button>
+        <span class="lang__ink" aria-hidden="true"></span>
+      </div>
+      <div class="lang__card" id="langCard" role="tabpanel"><p id="langText"></p></div>
+      <p class="lang__src muted">Written by Nemotron from a demo ledger. Every number is verified against the books.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="sec" id="faq">
+  <div class="wrap wrap--narrow">
+    <h2 class="sec__title" data-decrypt>Questions we expect.</h2>
+    <div class="faq">
+      <details><summary>What stops the model from corrupting the books?</summary><p>The model never writes to the database. It returns JSON, and code validates it field by field. Anything unclear goes to a queue for the owner. Reminder text is built by code, and every number in a model-written briefing is checked against the ledger.</p></details>
+      <details><summary>What if it is wrong but looks valid?</summary><p>That is the real residual risk, so we show our miss rate instead of hiding it. The owner can open the raw model output for every message. Known Hindi traps are guarded in code, a known customer's record overrides a wrong direction, and the same message twice in ten minutes is held instead of applied twice.</p></details>
+      <details><summary>Why not Tally, Vyapar or a spreadsheet?</summary><p>Those need the owner to type every entry. KhataPilot starts from the messages that already exist, then handles the follow-up: who to chase, what to reorder.</p></details>
+      <details><summary>Is WhatsApp integrated?</summary><p>On purpose, not through the Business API. One-click links keep a person on every send, which is the safety design, and avoid bulk-messaging risk.</p></details>
+      <details><summary>Where does my data live?</summary><p>On your own computer, in a SQLite file. Only message text and ledger figures for the briefing go to Nebius Token Factory. There is no cloud database and no login, so it is built for one shop on one machine today.</p></details>
+      <details><summary>Why is it not instant?</summary><p>Reasoning is on, which is what makes Hinglish reliable. A message typically takes a few seconds. Messages are independent, so they can run in parallel.</p></details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- CLOSE -->
+<footer class="close" id="close" data-dark>
+  <div class="wrap">
+    <h2 class="close__lede" data-decrypt>Run it in four lines.</h2>
+    <div class="cmd">
+      <pre id="cmdText" tabindex="0">git clone https://github.com/ShlokVasandani/khatapilot
+cd khatapilot &amp;&amp; python -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements.txt &amp;&amp; cp .env.example settings.env
+python app.py</pre>
+      <button class="btn btn--primary cmd__copy" id="copyBtn" type="button">Copy</button>
+    </div>
+    <p class="close__small">Add your Nebius API key and the Nemotron model ID to <code>settings.env</code>. Built for the Nebius x NVIDIA Global AI Hackathon.</p>
+  </div>
+  <div class="close__name" aria-hidden="true">KhataPilot</div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

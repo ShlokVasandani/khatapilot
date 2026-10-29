@@ -1,0 +1,90 @@
+{
+ "Kapoor traders ne 3,000 bhej diye": {
+  "ex": {
+   "intent": "payment_received",
+   "party": "Kapoor traders",
+   "items": [],
+   "amount_inr": 3000,
+   "due_date": null,
+   "due_date_text": null,
+   "direction": "customer_owes_us",
+   "notes": null
+  },
+  "meta": {
+   "latency_ms": 4527,
+   "prompt_tokens": 1344,
+   "completion_tokens": 334,
+   "attempts": 1,
+   "guard_fixed": false
+  }
+ },
+ "Sharma ji ko 5 kg chai patti bhej dena kal": {
+  "ex": {
+   "intent": "order",
+   "party": "Sharma ji",
+   "items": [
+    {
+     "name": "chai patti",
+     "quantity": 5,
+     "unit": "kg"
+    }
+   ],
+   "amount_inr": null,
+   "due_date": "2026-10-30",
+   "due_date_text": "kal",
+   "direction": null,
+   "notes": null
+  },
+  "meta": {
+   "latency_ms": 16636,
+   "prompt_tokens": 1346,
+   "completion_tokens": 839,
+   "attempts": 1,
+   "guard_fixed": false
+  }
+ },
+ "10 dabba tel chahiye, Gupta store": {
+  "ex": {
+   "intent": "order",
+   "party": "Gupta store",
+   "items": [
+    {
+     "name": "tel",
+     "quantity": 10,
+     "unit": "dabba"
+    }
+   ],
+   "amount_inr": null,
+   "due_date": null,
+   "due_date_text": null,
+   "direction": null,
+   "notes": null
+  },
+  "meta": {
+   "latency_ms": 11251,
+   "prompt_tokens": 1341,
+   "completion_tokens": 554,
+   "attempts": 1,
+   "guard_fixed": false
+  }
+ },
+ "Verma ji ka 2,500 baaki hai, 12 tarikh tak dega": {
+  "ex": {
+   "intent": "payment_promise",
+   "party": "Verma ji",
+   "items": [],
+   "amount_inr": 2500,
+   "due_date": "2026-11-12",
+   "due_date_text": "12 tarikh",
+   "direction": "customer_owes_us",
+   "notes": null
+  },
+  "meta": {
+   "latency_ms": 28329,
+   "prompt_tokens": 1352,
+   "completion_tokens": 938,
+   "attempts": 1,
+   "guard_fixed": false
+  }
+ }
+}

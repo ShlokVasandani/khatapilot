@@ -7,3 +7,4 @@ venv/
 .DS_Store
 shop.db
 eod/
+_pages/

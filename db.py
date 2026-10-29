@@ -167,6 +167,18 @@ def validate(ex) -> list[str]:
 
 # ------------------------------------------------------------ applying data
 
+def recent_duplicate(conn, raw: str, minutes: int = 10) -> bool:
+    """True if this exact message (ignoring case and spacing) was already recorded a moment ago.
+    Stops a double paste or double click from applying the same payment or order twice."""
+    key = " ".join(raw.lower().split())
+    for r in conn.execute(
+            "SELECT raw_message FROM transactions WHERE status != 'logged' "
+            "AND created_at >= datetime('now', ?)", (f"-{int(minutes)} minutes",)):
+        if " ".join((r["raw_message"] or "").lower().split()) == key:
+            return True
+    return False
+
+
 def _to_review(conn, raw, ex, reason) -> dict:
     with conn:
         conn.execute(
