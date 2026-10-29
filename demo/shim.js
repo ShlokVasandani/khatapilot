@@ -11,11 +11,25 @@
   const DUPE = "possible duplicate: this exact message was recorded in the last 10 minutes. If it is a new one, send it again with a small change, e.g. add the time.";
 
   let D = null;
+  /* Video mode: a URL hash such as #loaded&brief=hindi&open&raw&scroll=c-coll&cap=Some%20caption puts the demo in an exact
+     state for screenshots (used by tools/make_video.py to build the walkthrough). Ignored when the hash is empty. */
+  const H = new URLSearchParams(location.hash.slice(1).replace(/^&/, ""));
+  const video = location.hash.length > 1;
+  if (video) { const si = window.setInterval; window.setInterval = (f, t, ...a) => (t === 2500 ? 0 : si(f, t, ...a)); }
+
   const ready = realFetch("demo-data.json").then(r => r.json()).then(d => { D = d; });
 
   const fresh = () => ({loaded: false, closed: false, drafted: false, lang: null, extra: [], extraReview: [],
     dismissed: new Set(), drafts: null, phones: {}, opened: {}, job: {running: false, done: 0, total: 0}, ev: {running: false, done: 0, total: 48}, seenDupes: new Set()});
   let S = fresh();
+  ready.then(() => {
+    if (!video) return;
+    if (H.has("loaded") || H.has("closed")) S.loaded = true;
+    if (H.has("closed")) S.closed = true;
+    if (H.has("drafts")) S.drafted = true;
+    if (H.get("brief")) S.lang = H.get("brief");
+    if (H.get("msg")) { const k = norm(H.get("msg")); if (D.replay[k]) { const e = clone(D.replay[k]); e.at = "09:41:07"; S.extra.unshift(e); if (e.status === "review") S.extraReview.push({id: 9001, raw_message: e.message, reason: e.detail}); } }
+  });
 
   function compose() {
     const stage = S.closed ? "closed" : S.loaded ? "loaded" : "seed";
@@ -108,6 +122,17 @@
   };
 
   document.addEventListener("DOMContentLoaded", () => {
+    if (video) setTimeout(async () => {
+      await ready; await window.refresh();
+      if (H.has("open")) { const d = document.querySelector("#coll .coll"); if (d) d.open = true; }
+      if (H.has("raw")) document.querySelectorAll("#log details.raw").forEach((d, i) => { if (i < 1) d.open = true; });
+      if (H.get("scroll")) { const t = document.getElementById(H.get("scroll")); if (t) window.scrollTo(0, t.getBoundingClientRect().top + scrollY - 70); }
+      if (H.get("cap")) {
+        const c = document.createElement("div");
+        c.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:99;background:rgba(15,15,14,.92);color:#fff;font:600 30px/1.3 Inter,system-ui,sans-serif;padding:22px 48px";
+        c.textContent = H.get("cap"); document.body.append(c);
+      }
+    }, 900);
     const b = document.createElement("div");
     b.setAttribute("role", "note");
     b.style.cssText = "background:#141413;color:#f6f6f4;font:13px/1.45 Inter,system-ui,sans-serif;padding:9px 24px;text-align:center";

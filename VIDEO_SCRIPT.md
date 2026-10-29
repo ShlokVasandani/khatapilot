@@ -1,5 +1,10 @@
 # Demo video script (target 2:45, hard limit 3:00)
 
+> **A ready-made 2:13 version exists:** `khatapilot-demo.mp4` (built by `tools/make_video.py`). It is a narrated walkthrough made
+> from real screens of the hosted demo with captions and a synthetic voice. It is **not** a live screen recording and the voice
+> is synthetic, so say that in the YouTube description. If you have time, recording your own live run (below) is stronger.
+
+
 Record the **local app** (real Nemotron calls, proves it is live) with QuickTime: File > New Screen Recording, or Cmd+Shift+5.
 Use a 1080p window, hide bookmarks/notifications, speak slowly. Upload to YouTube as **Public**.
 
