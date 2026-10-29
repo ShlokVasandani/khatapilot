@@ -236,6 +236,13 @@ python drafts.py review           # approve / edit / reject in the terminal
 - Evaluation set is small (48 messages) and written by us; see [Accuracy, honestly](#accuracy-honestly).
 - Extraction takes a few seconds per message because reasoning is on.
 
+## Team
+
+Built for the Nebius x NVIDIA Global AI Hackathon by:
+
+- **Shlok Vasandani** (team lead): [@shlokvasandani0407](https://devpost.com/shlokvasandani0407)
+- **Prisha**: [@mathurprisha07](https://devpost.com/mathurprisha07)
+
 ## License
 
 MIT
