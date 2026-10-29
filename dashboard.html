@@ -4,475 +4,355 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KhataPilot</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%2376b900'/%3E%3Cpath d='M9 8v16M9 16l9-8M11.5 14l8.5 10' stroke='%230b0f0a' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23b3261e'/%3E%3Cpath d='M9 7v18M9 16.5L19.5 7M12 14l9 11' stroke='%23fff' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
+/* Design rules: neutral surfaces, one ink, colour only where it means something (red = owed / overdue,
+   green = settled, amber = needs a person). Hairlines and tables, tabular figures, 6px corners, no glow. */
 :root{
-  --bg:#07090a; --bg2:#0c1011; --panel:#111617; --panel2:#161d1e; --line:#1f2829; --line2:#2a3637;
-  --ink:#eef3ee; --muted:#8a9a93; --faint:#5d6b65;
-  --accent:#76b900; --accent-ink:#0a1200; --accent-soft:rgba(118,185,0,.12); --accent-line:rgba(118,185,0,.35);
-  --in:#4ade80; --in-soft:rgba(74,222,128,.10);
-  --out:#fbbf24; --out-soft:rgba(251,191,36,.10);
-  --bad:#f87171; --bad-soft:rgba(248,113,113,.12);
-  --blue:#60a5fa; --blue-soft:rgba(96,165,250,.12);
-  --radius:16px; --shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 8px 30px rgba(0,0,0,.35);
-  --glow:radial-gradient(60% 60% at 50% 0%, rgba(118,185,0,.16), transparent 70%);
-  color-scheme:dark;
+  --bg:#f6f6f4; --surface:#ffffff; --sunk:#f1f1ee; --ink:#141413; --ink2:#55554f; --ink3:#85857e;
+  --line:#e4e4df; --line2:#d3d3cc;
+  --owed:#b3261e; --owed-bg:#fbeceb; --ok:#17703f; --ok-bg:#e8f3ec; --hold:#8a5a00; --hold-bg:#faf1dc;
+  --primary:#141413; --on-primary:#ffffff; --focus:#2a5bd7;
+  --r:6px;
+  color-scheme:light;
 }
-@media (prefers-color-scheme:light){
-  :root:not([data-theme="dark"]){
-    --bg:#f4f6f1; --bg2:#eceee7; --panel:#ffffff; --panel2:#f6f8f2; --line:#e3e7dc; --line2:#d3d9ca;
-    --ink:#10160f; --muted:#5e6b5a; --faint:#8a9585;
-    --accent:#4d7c0f; --accent-ink:#ffffff; --accent-soft:rgba(77,124,15,.10); --accent-line:rgba(77,124,15,.35);
-    --in:#15803d; --in-soft:rgba(21,128,61,.09); --out:#a16207; --out-soft:rgba(161,98,7,.10);
-    --bad:#b91c1c; --bad-soft:rgba(185,28,28,.08); --blue:#1d4ed8; --blue-soft:rgba(29,78,216,.08);
-    --shadow:0 1px 2px rgba(16,22,15,.05), 0 6px 20px rgba(16,22,15,.05);
-    --glow:radial-gradient(60% 60% at 50% 0%, rgba(77,124,15,.10), transparent 70%);
-    color-scheme:light;
-  }
+@media (prefers-color-scheme:dark){
+  :root{--bg:#0f0f0e; --surface:#171716; --sunk:#1d1d1b; --ink:#ecece8; --ink2:#a7a7a0; --ink3:#797972;
+    --line:#292927; --line2:#363633; --owed:#ff8076; --owed-bg:#3a1f1d; --ok:#5fd08f; --ok-bg:#14291d; --hold:#e8b64d; --hold-bg:#33290f;
+    --primary:#ecece8; --on-primary:#141413; --focus:#7aa2ff; color-scheme:dark}
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
-  -webkit-font-smoothing:antialiased;min-height:100vh;background-image:var(--glow);background-repeat:no-repeat;background-size:100% 520px}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:3px}
+.num{font-variant-numeric:tabular-nums}
 .mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
-button,textarea,input{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{margin:0;font-weight:600}
+p{margin:0}
 
-/* top bar */
-.top{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 78%,transparent);border-bottom:1px solid var(--line)}
-.top-in{max-width:1480px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:12px}
-.logo{width:36px;height:36px;border-radius:11px;background:var(--accent);display:grid;place-items:center;box-shadow:0 0 0 1px var(--accent-line),0 6px 24px rgba(118,185,0,.28)}
-.logo svg{width:20px;height:20px}
-.brand h1{margin:0;font-size:18px;letter-spacing:-.02em;font-weight:700;line-height:1.1}
-.brand h1 span{color:var(--accent)}
-.brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}
-.top-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.pill{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:500;padding:6px 12px;border-radius:99px;background:var(--panel);border:1px solid var(--line);color:var(--muted)}
-.pill b{color:var(--ink);font-weight:600}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 0 var(--accent-line);animation:pulse 2s infinite}
-@keyframes pulse{70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+/* bar */
+.bar{background:var(--surface);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1440px;margin:0 auto;padding:0 24px;height:52px;display:flex;align-items:center;gap:20px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px}
+.mark{width:22px;height:22px;border-radius:5px;background:var(--owed);display:grid;place-items:center}
+.mark svg{width:13px;height:13px;stroke:#fff;stroke-width:3.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.bar .meta{color:var(--ink3);font-size:13px}
+.bar .sp{flex:1}
+.status{display:flex;align-items:center;gap:8px;color:var(--ink2);font-size:13px}
+.status i{width:6px;height:6px;background:var(--ok);display:block}
 
 /* layout */
-main{max-width:1480px;margin:0 auto;padding:24px;display:grid;gap:20px}
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
-.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
-@media(min-width:1100px){.grid{grid-template-columns:minmax(320px,.9fr) minmax(0,1.5fr) minmax(320px,1fr)}}
-@media(max-width:900px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:520px){main{padding:16px}.top-in{padding:12px 16px}.kpis{gap:10px}}
-.col{display:flex;flex-direction:column;gap:20px;min-width:0}
+main{max-width:1440px;margin:0 auto;padding:24px;display:grid;gap:24px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start}
+@media(min-width:1080px){.layout{grid-template-columns:minmax(0,1.55fr) minmax(340px,1fr)}}
+.col{display:flex;flex-direction:column;gap:24px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);min-width:0}
+.panel-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.panel-h h2{font-size:14px;display:flex;gap:8px;align-items:baseline}
+.panel-h h2 span{color:var(--ink3);font-weight:400;font-variant-numeric:tabular-nums}
+.panel-b{padding:16px}
+.note{color:var(--ink2);font-size:13px}
+.empty{color:var(--ink3);padding:20px 16px;text-align:center;font-size:13px}
 
-/* cards */
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);min-width:0}
-.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 14px;flex-wrap:wrap}
-.card-h h2{margin:0;font-size:15px;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
-.card-h h2 svg{width:17px;height:17px;color:var(--accent);flex:none}
-.count{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
-.count.hot{background:var(--out-soft);border-color:transparent;color:var(--out)}
-.note{font-size:12.5px;color:var(--muted);margin:0 0 14px}
-.empty{display:grid;place-items:center;text-align:center;gap:6px;padding:22px 12px;color:var(--faint);font-size:13px;border:1px dashed var(--line2);border-radius:12px}
-.empty svg{width:22px;height:22px;opacity:.7}
+/* summary strip */
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.summary>div{padding:16px 18px;border-right:1px solid var(--line);min-width:0}
+.summary>div:last-child{border-right:0}
+.summary dt{color:var(--ink2);font-size:13px}
+.summary dd{margin:4px 0 0}
+.summary .v{display:block;font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums}
+.summary .s{display:block;color:var(--ink3);font-size:12.5px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:760px){.summary{grid-template-columns:1fr 1fr}.summary>div:nth-child(2){border-right:0}.summary>div:nth-child(-n+2){border-bottom:1px solid var(--line)}}
 
-/* KPI */
-.kpi{position:relative;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
-.kpi::after{content:"";position:absolute;inset:auto -30% -60% auto;width:140px;height:140px;border-radius:50%;background:var(--tint);filter:blur(34px);opacity:.9;pointer-events:none}
-.kpi .l{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-weight:500}
-.kpi .l i{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:var(--tint);color:var(--c)}
-.kpi .l svg{width:14px;height:14px}
-.kpi b{display:block;margin-top:12px;font-size:30px;line-height:1.1;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;position:relative;z-index:1}
-.kpi small{display:block;margin-top:4px;font-size:12px;color:var(--faint);position:relative;z-index:1}
-.kpi.in{--c:var(--in);--tint:var(--in-soft)} .kpi.out{--c:var(--out);--tint:var(--out-soft)}
-.kpi.bad{--c:var(--bad);--tint:var(--bad-soft)} .kpi.blue{--c:var(--blue);--tint:var(--blue-soft)}
-@media(max-width:520px){.kpi{padding:14px}.kpi b{font-size:22px}}
-
-/* buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;cursor:pointer;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);padding:8px 14px;font-size:13px;font-weight:500;transition:.15s}
-.btn:hover{border-color:var(--accent-line);background:var(--accent-soft)}
-.btn svg{width:15px;height:15px}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600;box-shadow:0 4px 18px rgba(118,185,0,.25)}
-.btn.primary:hover{filter:brightness(1.08)}
-.btn.wa{background:var(--in-soft);border-color:var(--accent-line);color:var(--in);font-weight:600}
-.btn.wa:hover{background:var(--accent-soft)}
-.btn.danger{color:var(--bad)} .btn.danger:hover{background:var(--bad-soft);border-color:var(--bad)}
-.btn.ghost{background:transparent}
-.btn.sm{padding:5px 10px;font-size:12px;border-radius:8px}
-.btn:disabled{opacity:.5;cursor:default;pointer-events:none}
+/* controls */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 12px;border-radius:var(--r);border:1px solid var(--line2);background:var(--surface);cursor:pointer;font-weight:500;font-size:13px;white-space:nowrap}
+.btn:hover{background:var(--sunk)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.btn.primary:hover{opacity:.9}
+.btn.danger{color:var(--owed)}
+.btn.quiet{border-color:transparent;background:transparent;color:var(--ink2)}
+.btn.quiet:hover{background:var(--sunk);color:var(--ink)}
+.btn.quiet.danger{color:var(--owed)}
+.btn.sm{height:28px;padding:0 10px;font-size:12.5px}
+.btn:disabled{opacity:.45;cursor:default;pointer-events:none}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.spin{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:rot .7s linear infinite}
+.spin{width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:rot .7s linear infinite;display:inline-block}
 @keyframes rot{to{transform:rotate(360deg)}}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:var(--r);overflow:hidden}
+.seg button{border:0;background:var(--surface);height:28px;padding:0 12px;font-size:12.5px;font-weight:500;cursor:pointer;color:var(--ink2);border-right:1px solid var(--line2)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--primary);color:var(--on-primary)}
+input,textarea,select{border:1px solid var(--line2);border-radius:var(--r);background:var(--surface);padding:7px 10px;width:100%}
+textarea{resize:vertical;min-height:84px;line-height:1.5}
+textarea::placeholder,input::placeholder{color:var(--ink3)}
+.tag{display:inline-block;font-size:12px;font-weight:500;padding:1px 6px;border-radius:3px;background:var(--sunk);color:var(--ink2);white-space:nowrap}
+.tag.over{background:var(--owed-bg);color:var(--owed)}
+.tag.warn{background:var(--hold-bg);color:var(--hold)}
+.tag.done{background:var(--ok-bg);color:var(--ok)}
+.err{margin-top:10px;font-size:13px;color:var(--owed);background:var(--owed-bg);border-radius:var(--r);padding:8px 10px}
+kbd{font:12px "JetBrains Mono",monospace;padding:0 5px;border:1px solid var(--line2);border-radius:3px;background:var(--sunk)}
+
+/* tables and lists */
+table{width:100%;border-collapse:collapse}
+th{font-weight:500;color:var(--ink3);font-size:12.5px;text-align:left;padding:8px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th.r,td.r{text-align:right;white-space:nowrap}
+.meter{height:6px;background:var(--sunk);border-radius:2px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--ink2)}
+.meter.low i{background:var(--owed)}
 
 /* composer */
-.composer{background:var(--bg2);border:1px solid var(--line2);border-radius:14px;padding:4px;transition:.15s}
-.composer:focus-within{border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft)}
-textarea{display:block;width:100%;min-height:104px;resize:vertical;border:0;background:transparent;padding:12px;outline:0;line-height:1.5}
-textarea::placeholder{color:var(--faint)}
-.composer-f{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 8px 8px;flex-wrap:wrap}
-.composer-f>.row{flex-wrap:nowrap}.composer-f .sel{max-width:130px}
-.hint{font-size:11.5px;color:var(--faint)}
-kbd{font:11px "JetBrains Mono",monospace;padding:1px 6px;border-radius:5px;border:1px solid var(--line2);background:var(--panel2)}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 14px}
-.chip{cursor:pointer;font-size:12px;padding:5px 11px;border-radius:99px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);transition:.15s;text-align:left}
-.chip:hover{color:var(--ink);border-color:var(--accent-line)}
-.progress{margin-top:12px;font-size:12.5px;color:var(--accent)}
-.progress .bar{margin-top:8px}
-.err{margin-top:12px;font-size:13px;color:var(--bad);background:var(--bad-soft);border-radius:10px;padding:9px 12px}
-
-/* pipeline */
-.pipe{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:14px;padding-top:14px;border-top:1px dashed var(--line2)}
-.pipe span{padding:3px 9px;border-radius:99px;background:var(--panel2);border:1px solid var(--line)}
-.pipe span.ai{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent);font-weight:600}
-.pipe svg{width:12px;height:12px;color:var(--faint)}
-
-/* timeline */
-.log{display:flex;flex-direction:column;max-height:340px;overflow:auto;margin:-4px -6px 0 0;padding-right:6px}
-.ev{position:relative;padding:0 0 14px 22px;font-size:13px}
-.ev::before{content:"";position:absolute;left:5px;top:6px;bottom:-6px;width:1px;background:var(--line2)}
-.ev:last-child::before{display:none}
-.ev::after{content:"";position:absolute;left:0;top:5px;width:11px;height:11px;border-radius:50%;background:var(--in);box-shadow:0 0 0 3px var(--in-soft)}
-.ev.review::after{background:var(--out);box-shadow:0 0 0 3px var(--out-soft)}
-.ev q{display:block;quotes:none;font-weight:500}
-.ev small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
-.ev small b{font-weight:600;color:var(--in)} .ev.review small b{color:var(--out)}
-
-/* briefing */
-.brief-card{background:linear-gradient(160deg,var(--accent-soft),transparent 55%),var(--panel);border-color:var(--accent-line)}
-.seg{display:inline-flex;padding:3px;border-radius:11px;background:var(--bg2);border:1px solid var(--line)}
-.seg button{border:0;background:transparent;cursor:pointer;padding:5px 12px;font-size:12px;font-weight:500;border-radius:8px;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
-.seg button.on{background:var(--accent);color:var(--accent-ink);font-weight:600}
-.seg button:disabled{opacity:.6}
-.brief{font-size:15.5px;line-height:1.7;white-space:pre-wrap;min-height:70px}
-.brief.ph{color:var(--muted);font-size:14px}
-.src{display:flex;align-items:center;gap:7px;margin-top:14px;font-size:11.5px;color:var(--muted)}
-.src svg{width:14px;height:14px;color:var(--accent)}
-.skel{display:grid;gap:9px}
-.skel i{height:11px;border-radius:6px;background:linear-gradient(90deg,var(--line),var(--line2),var(--line));background-size:200% 100%;animation:sh 1.2s infinite}
-.skel i:nth-child(2){width:88%}.skel i:nth-child(3){width:64%}
-@keyframes sh{to{background-position:-200% 0}}
-
-/* tags */
-.tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap}
-.tag.over{background:var(--bad-soft);color:var(--bad)} .tag.soon{background:var(--out-soft);color:var(--out)}
-.tag.ok{background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
-.tag.warn{background:var(--out-soft);color:var(--out)} .tag.done{background:var(--in-soft);color:var(--in)}
-.tag.we{background:var(--blue-soft);color:var(--blue)}
-
-/* collections */
-.coll{border:1px solid var(--line);background:var(--bg2);border-radius:14px;padding:14px;margin-bottom:12px}
-.coll:last-child{margin-bottom:0}
-.coll-h{display:flex;align-items:center;gap:12px}
-.avatar{width:38px;height:38px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;color:var(--accent-ink);background:hsl(var(--h) 55% 62%)}
-.coll-h .who{flex:1;min-width:0}
-.coll-h .who b{display:block;font-size:15px;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.coll-h .who small{color:var(--muted);font-size:12px}
-.coll-h .amt{font-size:19px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.bubble{margin:12px 0;padding:12px 14px;border-radius:4px 14px 14px 14px;background:color-mix(in srgb,var(--in) 14%,var(--panel));border:1px solid var(--accent-line);font:12.5px/1.55 "JetBrains Mono",monospace;white-space:pre-wrap;overflow-wrap:anywhere}
-.phone{flex:1;min-width:130px;max-width:190px;padding:7px 11px;border-radius:10px;border:1px solid var(--line2);background:var(--panel2);outline:0;font-size:13px}
-.phone:focus{border-color:var(--accent-line)}
-.coll .err{margin-top:8px}
-
-/* tables */
-.tabs{display:flex;gap:4px;margin:0 0 12px;border-bottom:1px solid var(--line)}
-.tabs button{border:0;background:transparent;cursor:pointer;padding:8px 12px;font-size:13px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
-.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
-.list{display:flex;flex-direction:column}
-.li{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
-.li:last-child{border:0}
-.li .m{flex:1;min-width:0}
-.li .m b{display:block;font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.li .m small{color:var(--muted);font-size:12px}
-.li .v{font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
-.meter{height:6px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:7px}
-.meter i{display:block;height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--in))}
-.meter.low i{background:linear-gradient(90deg,var(--bad),var(--out))}
-
-/* drafts & review */
-.draft{border:1px solid var(--line);background:var(--bg2);border-radius:14px;padding:14px;margin-bottom:12px}
-.draft:last-child{margin-bottom:0}
-.draft .meta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:10px}
-.draft .meta b{color:var(--ink);font-weight:600}
-.draft p{margin:0 0 12px;white-space:pre-wrap}
-.draft textarea{border:1px solid var(--line2);border-radius:10px;min-height:96px;margin-bottom:10px;background:var(--panel2)}
-.rv{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
-.rv:last-child{border:0}
-.rv small{display:block;color:var(--out);margin-top:2px}
-
+.composer-note{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:12px;flex-wrap:wrap}
+.try{color:var(--ink2);font-size:13px;margin-top:12px}
+.try button{border:0;background:none;padding:0;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:3px;cursor:pointer;font-size:13px;margin-right:14px;text-align:left}
+.try button:hover{text-decoration-color:var(--ink)}
+.flow{color:var(--ink3);font-size:12.5px;margin-top:14px}
 
 /* trace */
-.tr{border:1px solid var(--line);background:var(--bg2);border-radius:14px;padding:12px 14px;margin-bottom:10px}
-.tr:last-child{margin-bottom:0}
-.tr-msg{display:flex;justify-content:space-between;gap:10px;font-weight:500;font-size:13.5px}
-.tr-msg time{color:var(--faint);font-size:11.5px;font-weight:400;white-space:nowrap}
-.tr-read{display:flex;gap:9px;align-items:flex-start;margin:8px 0 6px;font-size:13px;color:var(--ink)}
-.tr-read svg{width:15px;height:15px;color:var(--accent);flex:none;margin-top:3px}
-.kv{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0}
-.kv span{font-size:11.5px;padding:2px 8px;border-radius:7px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
-.kv span b{color:var(--ink);font-weight:600}
-.tr-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;color:var(--faint)}
-.tr-why{margin-top:6px;font-size:12px;color:var(--out)}
+.tr{padding:12px 16px;border-bottom:1px solid var(--line)}
+.tr:last-child{border-bottom:0}
+.tr-h{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.tr-h q{quotes:none;font-weight:500}
+.tr-h time{color:var(--ink3);font-size:12.5px;white-space:nowrap}
+.tr-read{color:var(--ink2);margin-top:2px}
+.tr-facts{color:var(--ink3);font-size:12.5px;margin-top:4px}
+.tr-facts b{color:var(--ink);font-weight:500}
+.tr-foot{display:flex;gap:10px;align-items:center;margin-top:8px;color:var(--ink3);font-size:12.5px}
+.tr-why{color:var(--hold);font-size:12.5px;margin-top:4px}
 details.raw{margin-top:6px}
-details.raw summary{cursor:pointer;font-size:11.5px;color:var(--faint)}
-details.raw pre{margin:6px 0 0;padding:10px;border-radius:10px;background:var(--panel2);font:11.5px/1.5 "JetBrains Mono",monospace;overflow:auto}
-.tag.safe{background:var(--accent-soft);color:var(--accent)}
+details.raw summary{cursor:pointer;color:var(--ink3);font-size:12.5px}
+details.raw pre{margin:6px 0 0;padding:10px;background:var(--sunk);border-radius:var(--r);font:12px/1.5 "JetBrains Mono",monospace;overflow:auto}
+.scroll{max-height:380px;overflow:auto}
 
-/* safety */
-.trust{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.trust div{padding:10px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);text-align:center}
-.trust svg{width:18px;height:18px;color:var(--accent)}
-.trust b{display:block;font-size:12.5px;margin-top:4px}
-.trust small{font-size:11px;color:var(--muted);line-height:1.35;display:block}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.stat{padding:10px 12px;border-radius:12px;background:var(--bg2);border:1px solid var(--line)}
-.stat small{display:block;font-size:11px;color:var(--muted)}
-.stat b{font-size:19px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.stat em{font-style:normal;font-size:11px;color:var(--faint)}
+/* briefing */
+.brief{font-size:15px;line-height:1.65;white-space:pre-wrap;max-width:78ch}
+.brief.ph{color:var(--ink3);font-size:14px}
+.src{color:var(--ink3);font-size:12.5px;margin-top:12px}
+.skel{display:grid;gap:8px;max-width:60ch}
+.skel i{height:10px;border-radius:2px;background:var(--sunk);animation:sh 1.2s infinite alternate}
+.skel i:nth-child(2){width:86%}.skel i:nth-child(3){width:60%}
+@keyframes sh{to{background:var(--line)}}
 
-/* accuracy */
-.acc{display:flex;align-items:center;gap:16px}
-.ring{--p:0;width:92px;height:92px;flex:none;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center}
-.ring::before{content:"";position:absolute}
-.ring span{width:72px;height:72px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-weight:700;font-size:19px;letter-spacing:-.02em}
-.acc p{margin:0;font-size:13px;color:var(--muted)} .acc p b{color:var(--ink)}
-.miss{font-size:12px;padding:8px 0;border-top:1px solid var(--line);color:var(--muted)}
-.miss q{quotes:none;display:block;color:var(--ink);font-weight:500}
+/* collections */
+.coll{border-bottom:1px solid var(--line)}
+.coll:last-child{border-bottom:0}
+.coll summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 16px}
+.coll summary::-webkit-details-marker{display:none}
+.coll summary:hover{background:var(--sunk)}
+.coll .who b{font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.coll .who span{color:var(--ink3);font-size:12.5px}
+.coll .amt{font-weight:600;text-align:right;min-width:84px}
+.coll .st{min-width:0}
+.coll[open] summary{background:var(--sunk)}
+.coll-b{padding:4px 16px 16px;background:var(--sunk)}
+.reminder{margin:0 0 12px;padding:12px;border:1px solid var(--line2);border-radius:var(--r);background:var(--surface);font:12.5px/1.6 "JetBrains Mono",monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.coll-b .row input{width:170px}
+.code-note{font-size:12.5px;color:var(--ink3);margin-bottom:8px}
+@media(max-width:560px){.coll summary{grid-template-columns:1fr auto}.coll .st{grid-column:1/-1}}
 
-/* charts */
-.stack{display:flex;height:14px;border-radius:8px;overflow:hidden;background:var(--line);gap:2px}
+/* drafts and decisions */
+.draft{padding:14px 16px;border-bottom:1px solid var(--line)}
+.draft:last-child{border-bottom:0}
+.draft .meta{display:flex;justify-content:space-between;gap:8px;color:var(--ink3);font-size:12.5px;margin-bottom:8px}
+.draft .meta b{color:var(--ink);font-weight:500}
+.draft p{white-space:pre-wrap;margin-bottom:12px}
+.draft textarea{margin-bottom:10px}
+.rv{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;padding:12px 16px;border-bottom:1px solid var(--line)}
+.rv:last-child{border-bottom:0}
+.rv small{display:block;color:var(--hold);font-size:12.5px;margin-top:2px}
+
+/* tabs */
+.tabs{display:flex;gap:20px;padding:0 16px;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:none;padding:12px 0;margin-bottom:-1px;border-bottom:2px solid transparent;color:var(--ink3);font-weight:500;cursor:pointer}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+.ledger td:first-child{width:100%}
+.ledger small{display:block;color:var(--ink3);font-size:12.5px}
+
+/* definition lists (safety, performance) */
+dl.kv{display:grid;grid-template-columns:1fr auto;margin:0}
+dl.kv dt,dl.kv dd{padding:9px 16px;border-bottom:1px solid var(--line);margin:0}
+dl.kv dt{color:var(--ink2)}
+dl.kv dd{text-align:right;font-weight:500;font-variant-numeric:tabular-nums}
+dl.kv dt:nth-last-of-type(1),dl.kv dd:last-of-type{border-bottom:0}
+.rule-list{margin:0;padding:12px 16px 4px;list-style:none;display:grid;gap:8px}
+.rule-list b{font-weight:600}
+.rule-list span{color:var(--ink2)}
+
+/* accuracy and charts */
+.big{font-size:32px;font-weight:600;letter-spacing:-.025em;line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:14px;font-weight:400;color:var(--ink3);letter-spacing:0}
+.stack{display:flex;height:8px;border-radius:2px;overflow:hidden;gap:2px;background:var(--sunk)}
 .stack i{display:block;min-width:3px}
-.legend{display:grid;gap:6px;margin-top:12px;font-size:12.5px}
+.legend{margin-top:12px;display:grid;gap:6px;font-size:13px}
 .legend div{display:flex;align-items:center;gap:8px}
-.legend i{width:9px;height:9px;border-radius:3px;flex:none}
-.legend span{flex:1;color:var(--muted)} .legend b{font-variant-numeric:tabular-nums}
-.hbar{display:grid;grid-template-columns:96px 1fr auto;gap:10px;align-items:center;font-size:12.5px;margin-top:9px}
-.hbar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
-.hbar .meter{margin:0}
-.hbar b{font-variant-numeric:tabular-nums}
-.sub-h{margin:18px 0 2px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.legend i{width:8px;height:8px;flex:none;border-radius:1px}
+.legend span{flex:1;color:var(--ink2)}
+.hbar{display:grid;grid-template-columns:110px 1fr auto;gap:10px;align-items:center;margin-top:8px;font-size:13px}
+.hbar span{color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub-h{font-size:12.5px;font-weight:500;color:var(--ink3);margin:18px 0 4px}
+.miss{padding:8px 0;border-top:1px solid var(--line);font-size:13px;color:var(--ink2)}
+.miss q{quotes:none;color:var(--ink);display:block;font-weight:500}
 
-/* hero / onboarding */
-.hero{display:grid;gap:14px;padding:26px;border-radius:var(--radius);border:1px solid var(--accent-line);background:linear-gradient(135deg,var(--accent-soft),transparent 60%),var(--panel)}
-.hero h2{margin:0;font-size:24px;letter-spacing:-.03em;line-height:1.2}
-.hero p{margin:0;color:var(--muted);max-width:62ch}
-.hero .row{margin-top:4px}
+/* onboarding */
+.intro{padding:24px;display:grid;gap:12px;max-width:760px}
+.intro h2{font-size:20px;letter-spacing:-.01em}
+.intro p{color:var(--ink2)}
 
-/* mic */
-.btn.mic.on{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
-.btn.mic.on svg{animation:pulse2 1s infinite}
-@keyframes pulse2{50%{opacity:.35}}
-.sel{background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:5px 8px;font-size:12px;color:var(--muted)}
-
-/* mobile nav */
-.mnav{display:none}
-@media(max-width:1099px){
-  body{padding-bottom:72px}
-  .mnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(5,1fr);background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
-  .mnav button{border:0;background:transparent;display:grid;gap:2px;justify-items:center;font-size:10.5px;color:var(--muted);padding:6px 0;cursor:pointer;border-radius:10px}
-  .mnav button svg{width:20px;height:20px}
-  .mnav button:active{background:var(--accent-soft);color:var(--accent)}
-  .toasts{bottom:84px;right:12px;left:12px}
-}
-.card[id],.col[id]{scroll-margin-top:76px}
-
-/* guided demo */
+/* toast, tour */
+.toasts{position:fixed;right:20px;bottom:20px;display:grid;gap:8px;z-index:50}
+.toast{max-width:340px;padding:10px 14px;border-radius:var(--r);background:var(--primary);color:var(--on-primary);font-size:13px;animation:up .2s}
+.toast.bad{background:var(--owed);color:#fff}
+@keyframes up{from{transform:translateY(6px);opacity:0}}
 .tour-shade{position:fixed;inset:0;z-index:60;pointer-events:none}
-.tour-hole{position:fixed;border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,.66),0 0 0 2px var(--accent);transition:all .3s;pointer-events:none}
-.tour-card{position:fixed;z-index:61;width:min(380px,calc(100vw - 24px));padding:18px;border-radius:16px;background:var(--panel);border:1px solid var(--accent-line);box-shadow:0 20px 60px rgba(0,0,0,.5);pointer-events:auto}
-.tour-card h3{margin:0 0 6px;font-size:16px;letter-spacing:-.01em}
-.tour-card p{margin:0 0 14px;font-size:13.5px;color:var(--muted)}
-.tour-n{font-size:11px;color:var(--accent);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.tour-hole{position:fixed;border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,.55),0 0 0 2px var(--ink);transition:all .25s;pointer-events:none}
+.tour-card{position:fixed;z-index:61;width:min(360px,calc(100vw - 24px));padding:16px;border-radius:8px;background:var(--surface);border:1px solid var(--line2);box-shadow:0 12px 32px rgba(0,0,0,.25)}
+.tour-card h3{font-size:15px;margin-bottom:4px}
+.tour-card p{color:var(--ink2);margin-bottom:14px}
+.tour-n{font-size:12.5px;color:var(--ink3);margin-bottom:4px}
 .dots{display:flex;gap:4px;margin-left:auto}
-.dots i{width:6px;height:6px;border-radius:50%;background:var(--line2)}
-.dots i.on{background:var(--accent)}
+.dots i{width:5px;height:5px;background:var(--line2);display:block}
+.dots i.on{background:var(--ink)}
 
-/* toasts */
-.toasts{position:fixed;right:20px;bottom:20px;display:grid;gap:10px;z-index:50}
-.toast{max-width:360px;padding:12px 16px;border-radius:12px;background:var(--panel2);border:1px solid var(--accent-line);box-shadow:0 12px 40px rgba(0,0,0,.4);font-size:13px;animation:up .25s}
-.toast.bad{border-color:var(--bad)}
-@keyframes up{from{transform:translateY(8px);opacity:0}}
+/* mobile section nav */
+.mnav{display:none}
+@media(max-width:1079px){
+  body{padding-bottom:56px}
+  .mnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-top:1px solid var(--line)}
+  .mnav button{border:0;background:none;padding:15px 0;font-size:12.5px;font-weight:500;color:var(--ink2);cursor:pointer}
+  .mnav button:active{background:var(--sunk);color:var(--ink)}
+  .toasts{bottom:68px}
+  .bar .meta,.status .model{display:none}
+}
+.panel[id],.col[id]{scroll-margin-top:12px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="i-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v14M6 11l6 6 6-6M4 21h16"/></symbol>
-  <symbol id="i-out" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V7M6 13l6-6 6 6M4 3h16"/></symbol>
-  <symbol id="i-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></symbol>
-  <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></symbol>
-  <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 01-11.7 7L3 21l2-5.8A8 8 0 1121 12z"/></symbol>
-  <symbol id="i-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16z"/></symbol>
-  <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></symbol>
-  <symbol id="i-clip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/></symbol>
-  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
-  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></symbol>
-  <symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v4"/></symbol>
-  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3zM9 12l2 2 4-4"/></symbol>
-  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></symbol>
-  <symbol id="i-cpu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 9h6v6H9zM9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4"/></symbol>
-  <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
-  <symbol id="i-bars" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
-  <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></symbol>
-  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></symbol>
-</svg>
-
-<header class="top">
-  <div class="top-in">
-    <div class="brand">
-      <div class="logo"><svg viewBox="0 0 32 32" fill="none" stroke="#0a1200" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7v18M9 16.5L19.5 7M12 14l9 11"/></svg></div>
-      <div>
-        <h1>Khata<span>Pilot</span></h1>
-        <p>WhatsApp-native back office for small businesses</p>
-      </div>
-    </div>
-    <div class="top-r">
-      <button class="btn" id="tour-btn"><svg><use href="#i-play"/></svg>Guided demo</button>
-      <span class="pill"><span class="dot"></span><span id="model">Nemotron · Nebius Token Factory</span></span>
-      <span class="pill mono" id="today">—</span>
-    </div>
+<header class="bar">
+  <div class="bar-in">
+    <div class="brand"><span class="mark"><svg viewBox="0 0 32 32"><path d="M9 7v18M9 16.5L19.5 7M12 14l9 11"/></svg></span>KhataPilot</div>
+    <span class="meta num" id="today">-</span>
+    <span class="sp"></span>
+    <span class="status"><i></i><span class="model" id="model">Nemotron on Nebius Token Factory</span></span>
+    <button class="btn" id="tour-btn">Guided demo</button>
   </div>
 </header>
 
 <main>
-  <section class="hero" id="hero" hidden>
-    <h2>Run a shop from WhatsApp messages. Nothing gets sent without you.</h2>
-    <p>Shopkeepers in India run on messages like <i>“Kapoor traders ne 3,000 bhej diye”</i>. KhataPilot reads them with Nemotron on Nebius, keeps the ledger, writes your morning briefing and prepares payment reminders. The model reads, code decides, you press send.</p>
-    <div class="row">
-      <button class="btn primary" id="hero-tour"><svg><use href="#i-play"/></svg>Take the 90-second tour</button>
-      <button class="btn" id="hero-demo"><svg><use href="#i-spark"/></svg>Load 28 demo messages</button>
-    </div>
+  <section class="panel intro" id="hero" hidden>
+    <h2>Run the shop from its WhatsApp messages.</h2>
+    <p>Paste a customer message and Nemotron on Nebius turns it into a ledger entry. Code validates every field first, and nothing is sent without you.</p>
+    <div class="row"><button class="btn primary" id="hero-tour">Take the guided demo</button><button class="btn" id="hero-demo">Load 28 demo messages</button></div>
   </section>
 
-  <section class="kpis" aria-label="Summary">
-    <div class="kpi in"><div class="l"><i><svg><use href="#i-in"/></svg></i>To collect</div><b id="kin">Rs 0</b><small id="kin-s">from customers</small></div>
-    <div class="kpi out"><div class="l"><i><svg><use href="#i-out"/></svg></i>To pay suppliers</div><b id="kout">Rs 0</b><small id="kout-s">outstanding</small></div>
-    <div class="kpi bad"><div class="l"><i><svg><use href="#i-box"/></svg></i>Low stock</div><b id="klow">0</b><small id="klow-s">items below reorder level</small></div>
-    <div class="kpi blue"><div class="l"><i><svg><use href="#i-alert"/></svg></i>Needs you</div><b id="kask">0</b><small id="kask-s">decisions and approvals</small></div>
+  <section class="panel summary" aria-label="Summary">
+    <div><dt>To collect</dt><dd><span class="v" id="kin">Rs 0</span><span class="s" id="kin-s">from customers</span></dd></div>
+    <div><dt>To pay suppliers</dt><dd><span class="v" id="kout">Rs 0</span><span class="s" id="kout-s">outstanding</span></dd></div>
+    <div><dt>Low stock</dt><dd><span class="v" id="klow">0</span><span class="s" id="klow-s">items below reorder level</span></dd></div>
+    <div><dt>Needs you</dt><dd><span class="v" id="kask">0</span><span class="s" id="kask-s">decisions and approvals</span></dd></div>
   </section>
 
-  <div class="grid">
-    <!-- LEFT -->
-    <div class="col" id="sec-inbox">
-      <section class="card" id="c-compose">
-        <div class="card-h"><h2><svg><use href="#i-chat"/></svg>Paste a customer message</h2><span class="hint" id="kbd-hint"><kbd>⌘</kbd> <kbd>Enter</kbd> to add</span></div>
-        <div class="composer">
-          <textarea id="msg" placeholder="Kapoor traders ne 3,000 bhej diye&#10;(one message per line)"></textarea>
-          <div class="composer-f">
-            <span class="row">
-              <button class="btn sm mic" id="mic" hidden title="Speak a message"><svg><use href="#i-mic"/></svg><span id="mic-t">Speak</span></button>
-              <select class="sel" id="mic-lang" hidden aria-label="Voice language"><option value="hi-IN">Hindi / Hinglish</option><option value="en-IN">English (India)</option></select>
-            </span>
-            <button class="btn primary" id="send"><svg><use href="#i-send"/></svg>Add to ledger</button>
-          </div>
+  <div class="layout">
+    <div class="col" id="sec-main">
+
+      <section class="panel" id="c-brief">
+        <div class="panel-h"><h2>Morning briefing</h2>
+          <div class="seg" role="group" aria-label="Language"><button id="b-en">English</button><button id="b-hi">Hinglish</button><button id="b-dv" lang="hi">हिन्दी</button></div>
         </div>
-        <div class="chips" id="chips"></div>
-        <div class="row">
-          <button class="btn" id="demo"><svg><use href="#i-spark"/></svg>Load 28 demo messages</button>
-          <button class="btn danger ghost" id="reset">Reset</button>
-        </div>
-        <div class="progress" id="progress" hidden></div>
-        <div class="err" id="err" hidden></div>
-        <div class="pipe" aria-label="How it works">
-          <span>Message</span><svg><use href="#i-arrow"/></svg><span class="ai">Nemotron extracts</span><svg><use href="#i-arrow"/></svg><span>Code validates</span><svg><use href="#i-arrow"/></svg><span>Ledger</span>
-        </div>
+        <div class="panel-b"><div class="brief ph" id="brief"></div><div class="src" id="brief-src"></div></div>
       </section>
 
-      <section class="card" id="c-trace">
-        <div class="card-h"><h2><svg><use href="#i-eye"/></svg>How Nemotron read it</h2><span class="count" id="log-n">0</span></div>
-        <div class="log" id="log"></div>
-      </section>
-
-      <section class="card" id="c-safety">
-        <div class="card-h"><h2><svg><use href="#i-shield"/></svg>Safety by design</h2></div>
-        <div class="trust">
-          <div><svg><use href="#i-eye"/></svg><b>Model reads</b><small>Turns Hinglish into structured data</small></div>
-          <div><svg><use href="#i-shield"/></svg><b>Code decides</b><small>Validates every field before the ledger</small></div>
-          <div><svg><use href="#i-send"/></svg><b>You send</b><small>A person presses send every time</small></div>
-        </div>
-        <div class="stats">
-          <div class="stat"><small>Messages read</small><b id="sf-read">0</b></div>
-          <div class="stat"><small>Written to ledger</small><b id="sf-rec">0</b></div>
-          <div class="stat"><small>Held for you</small><b id="sf-hold">0</b></div>
-          <div class="stat"><small>Sent automatically</small><b>0</b><em> always</em></div>
-        </div>
-      </section>
-    </div>
-
-    <!-- MIDDLE -->
-    <div class="col" id="sec-brief">
-      <section class="card brief-card" id="c-brief">
-        <div class="card-h">
-          <h2><svg><use href="#i-spark"/></svg>Morning briefing</h2>
-          <div class="seg" role="group" aria-label="Language">
-            <button id="b-en">English</button><button id="b-hi">Hinglish</button><button id="b-dv" lang="hi">हिन्दी</button>
-          </div>
-        </div>
-        <div class="brief ph" id="brief"></div>
-        <div class="src" id="brief-src"></div>
-      </section>
-
-      <section class="card" id="c-coll">
-        <div class="card-h">
-          <h2><svg><use href="#i-chat"/></svg>Who to remind today <span class="count" id="coll-n">0</span></h2>
-          <button class="btn sm" id="close-day"><svg><use href="#i-lock"/></svg>Close the day</button>
-        </div>
-        <p class="note" id="close-note"></p>
+      <section class="panel" id="c-coll">
+        <div class="panel-h"><h2>Collections <span id="coll-n">0</span></h2><button class="btn sm" id="close-day">Close the day</button></div>
+        <div class="panel-b" style="padding-bottom:12px"><p class="note" id="close-note"></p></div>
         <div id="coll"></div>
       </section>
 
-      <section class="card" id="c-charts">
-        <div class="card-h"><h2><svg><use href="#i-bars"/></svg>Money owed to you</h2></div>
-        <div id="charts"></div>
+      <section class="panel" id="c-compose">
+        <div class="panel-h"><h2>Messages</h2><span class="note" id="kbd-hint"><kbd>⌘</kbd> <kbd>Enter</kbd> to add</span></div>
+        <div class="panel-b">
+          <textarea id="msg" placeholder="Kapoor traders ne 3,000 bhej diye&#10;One message per line"></textarea>
+          <div class="composer-note">
+            <div class="row">
+              <button class="btn" id="mic" hidden><span id="mic-t">Speak</span></button>
+              <select id="mic-lang" hidden aria-label="Voice language" style="width:auto"><option value="hi-IN">Hindi / Hinglish</option><option value="en-IN">English (India)</option></select>
+            </div>
+            <button class="btn primary" id="send">Add to ledger</button>
+          </div>
+          <p class="try" id="chips"><span>Try:</span> </p>
+          <div class="row" style="margin-top:14px"><button class="btn sm" id="demo">Load 28 demo messages</button><button class="btn sm quiet danger" id="reset">Reset ledger</button></div>
+          <div class="note" id="progress" hidden style="margin-top:12px"></div>
+          <div class="err" id="err" hidden></div>
+          <p class="flow">Message, then Nemotron extracts, code validates, ledger updates.</p>
+        </div>
+      </section>
+
+      <section class="panel" id="c-trace">
+        <div class="panel-h"><h2>How each message was read <span id="log-n">0</span></h2></div>
+        <div class="scroll" id="log"></div>
       </section>
     </div>
 
-    <!-- RIGHT -->
-    <div class="col" id="sec-act">
-      <section class="card" id="c-drafts">
-        <div class="card-h">
-          <h2><svg><use href="#i-send"/></svg>Awaiting your approval <span class="count" id="dr-n">0</span></h2>
-          <button class="btn sm" id="gen">Draft reorder</button>
-        </div>
-        <div id="drafts"></div>
-      </section>
-
-      <section class="card" id="c-review">
-        <div class="card-h"><h2><svg><use href="#i-alert"/></svg>Needs your decision <span class="count" id="rv-n">0</span></h2></div>
+    <aside class="col" id="sec-act">
+      <section class="panel" id="c-review">
+        <div class="panel-h"><h2>Needs your decision <span id="rv-n">0</span></h2></div>
         <div id="review"></div>
       </section>
 
-      <section class="card" id="sec-ledger">
-        <div class="tabs" role="tablist">
-          <button class="on" id="t-dues" role="tab">Money</button>
-          <button id="t-stock" role="tab">Stock</button>
-        </div>
-        <div class="list" id="dues"></div>
-        <div class="list" id="stock" hidden></div>
+      <section class="panel" id="c-drafts">
+        <div class="panel-h"><h2>Awaiting approval <span id="dr-n">0</span></h2><button class="btn sm" id="gen">Draft reorder</button></div>
+        <div id="drafts"></div>
       </section>
 
-      <section class="card" id="c-acc">
-        <div class="card-h"><h2><svg><use href="#i-target"/></svg>Extraction accuracy</h2>
-          <button class="btn sm" id="eval-run">Run evaluation</button></div>
-        <div id="acc"></div>
+      <section class="panel" id="sec-ledger">
+        <div class="tabs" role="tablist"><button class="on" id="t-dues" role="tab">Money</button><button id="t-stock" role="tab">Stock</button></div>
+        <div id="dues"></div>
+        <div id="stock" hidden></div>
       </section>
 
-      <section class="card" id="c-perf">
-        <div class="card-h"><h2><svg><use href="#i-cpu"/></svg>Nebius performance</h2></div>
+      <section class="panel" id="c-charts">
+        <div class="panel-h"><h2>Money owed to you</h2></div>
+        <div class="panel-b" id="charts"></div>
+      </section>
+
+      <section class="panel" id="c-safety">
+        <div class="panel-h"><h2>Safety</h2></div>
+        <ul class="rule-list">
+          <li><b>The model reads.</b> <span>It turns Hinglish into structured data and nothing else.</span></li>
+          <li><b>Code decides.</b> <span>Every field is validated before the ledger changes.</span></li>
+          <li><b>You send.</b> <span>A person presses send on every reminder and order.</span></li>
+        </ul>
+        <dl class="kv" style="margin-top:8px">
+          <dt>Messages read</dt><dd id="sf-read">0</dd>
+          <dt>Written to ledger</dt><dd id="sf-rec">0</dd>
+          <dt>Held for you</dt><dd id="sf-hold">0</dd>
+          <dt>Sent automatically</dt><dd>0</dd>
+        </dl>
+      </section>
+
+      <section class="panel" id="c-acc">
+        <div class="panel-h"><h2>Extraction accuracy</h2><button class="btn sm" id="eval-run">Run evaluation</button></div>
+        <div class="panel-b" id="acc"></div>
+      </section>
+
+      <section class="panel" id="c-perf">
+        <div class="panel-h"><h2>Nebius performance</h2></div>
         <div id="perf"></div>
       </section>
-    </div>
+    </aside>
   </div>
 </main>
 
 <nav class="mnav" aria-label="Sections">
-  <button data-go="sec-inbox"><svg><use href="#i-chat"/></svg>Inbox</button>
-  <button data-go="sec-brief"><svg><use href="#i-spark"/></svg>Briefing</button>
-  <button data-go="c-coll"><svg><use href="#i-send"/></svg>Remind</button>
-  <button data-go="c-drafts"><svg><use href="#i-alert"/></svg>Approve</button>
-  <button data-go="sec-ledger"><svg><use href="#i-home"/></svg>Ledger</button>
+  <button data-go="c-brief">Briefing</button><button data-go="c-coll">Collect</button><button data-go="c-compose">Messages</button><button data-go="c-review">Review</button><button data-go="sec-ledger">Ledger</button>
 </nav>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <div id="tour" hidden></div>
@@ -486,10 +366,7 @@ const el = (tag, props = {}, ...kids) => {
   kids.flat().forEach(k => e.append(k));
   return e;
 };
-const icon = (name, cls) => { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); if (cls) s.setAttribute("class", cls);
-  s.innerHTML = `<use href="#i-${name}"/>`; return s; };
-const empty = (name, text) => el("div", {className: "empty"}, icon(name), el("span", {textContent: text}));
-const hue = s => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7);
+const empty = text => el("div", {className: "empty", textContent: text});
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const SAMPLES = [
   "Kapoor traders ne 3,000 bhej diye",
@@ -500,10 +377,11 @@ const SAMPLES = [
 const INTENT = {order: "Order", payment_promise: "Money owed", payment_received: "Payment received", payment_made: "Payment sent",
   complaint: "Complaint", inquiry: "Question", other: "Unclear"};
 let editing = null, editingPhone = false, busy = false, lang = null, briefing = false, S = null, touring = false;
+const openColl = new Set();
 
 function toast(text, bad) {
   const t = el("div", {className: "toast" + (bad ? " bad" : ""), textContent: text});
-  $("toasts").append(t); setTimeout(() => t.remove(), bad ? 6000 : 3500);
+  $("toasts").append(t); setTimeout(() => t.remove(), bad ? 6000 : 3000);
 }
 async function api(path, body) {
   const res = await fetch("/api/" + path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body || {})});
@@ -521,7 +399,6 @@ async function run(btn, fn, working = "Working…") {
   finally { btn.replaceChildren(...kids); btn.disabled = false; busy = false; refresh(); }
 }
 
-/* plain-English reading of what Nemotron extracted */
 function reading(x) {
   if (!x || !x.intent) return "";
   const who = x.party || "someone";
@@ -539,83 +416,82 @@ function reading(x) {
   }
 }
 
-function traceCard(l) {
+function traceRow(l) {
   const x = l.extracted || {};
   const held = l.status === "review";
   const outcome = l.failed ? ["over", "Model error"]
     : l.validation && l.validation.length ? ["warn", "Held by code"]
-    : held ? ["warn", "Needs your decision"] : ["safe", "Written to ledger"];
-  const kv = [];
-  if (x.intent) kv.push(["intent", INTENT[x.intent] || x.intent]);
-  if (x.party) kv.push(["who", x.party]);
-  if (x.amount_inr != null) kv.push(["amount", inr(x.amount_inr)]);
-  (x.items || []).forEach(i => kv.push(["item", [i.quantity, i.unit, i.name].filter(v => v != null && v !== "").join(" ")]));
-  if (x.due_date) kv.push(["due", x.due_date]);
-  const card = el("div", {className: "tr"});
-  card.append(el("div", {className: "tr-msg"}, el("span", {textContent: "“" + l.message + "”"}), el("time", {textContent: l.at})));
-  if (!l.failed) card.append(el("div", {className: "tr-read"}, icon("spark"), el("span", {textContent: reading(x)})));
-  if (kv.length) card.append(el("div", {className: "kv"}, kv.map(([k, v]) => el("span", {}, k + " ", el("b", {textContent: v})))));
+    : held ? ["warn", "Needs your decision"] : ["done", "Written to ledger"];
+  const facts = [];
+  if (x.intent) facts.push(["intent", INTENT[x.intent] || x.intent]);
+  if (x.party) facts.push(["who", x.party]);
+  if (x.amount_inr != null) facts.push(["amount", inr(x.amount_inr)]);
+  (x.items || []).forEach(i => facts.push(["item", [i.quantity, i.unit, i.name].filter(v => v != null && v !== "").join(" ")]));
+  if (x.due_date) facts.push(["due", x.due_date]);
+  const row = el("div", {className: "tr"});
+  row.append(el("div", {className: "tr-h"}, el("q", {textContent: "“" + l.message + "”"}), el("time", {textContent: l.at})));
+  if (!l.failed) row.append(el("div", {className: "tr-read", textContent: reading(x)}));
+  if (facts.length) {
+    const f = el("div", {className: "tr-facts"});
+    facts.forEach(([k, v], i) => { if (i) f.append(" · "); f.append(k + " ", el("b", {textContent: v})); });
+    row.append(f);
+  }
   const foot = el("div", {className: "tr-foot"}, el("span", {className: "tag " + outcome[0], textContent: outcome[1]}));
-  if (l.latency_ms) foot.append(el("span", {textContent: `${(l.latency_ms / 1000).toFixed(1)}s`}),
-    el("span", {textContent: `${l.prompt_tokens + l.completion_tokens} tokens`}));
-  card.append(foot);
+  if (l.latency_ms) foot.append(el("span", {className: "num", textContent: `${(l.latency_ms / 1000).toFixed(1)} s`}),
+    el("span", {className: "num", textContent: `${l.prompt_tokens + l.completion_tokens} tokens`}));
+  row.append(foot);
   const why = (l.validation && l.validation.length) ? l.validation.join("; ") : held || l.failed ? l.detail : "";
-  if (why) card.append(el("div", {className: "tr-why", textContent: why}));
-  if (l.extracted && Object.keys(x).length) card.append(el("details", {className: "raw"},
+  if (why) row.append(el("div", {className: "tr-why", textContent: why}));
+  if (l.extracted && Object.keys(x).length) row.append(el("details", {className: "raw"},
     el("summary", {textContent: "Raw model output"}), el("pre", {textContent: JSON.stringify(x, null, 2)})));
-  return card;
+  return row;
 }
 
 function chartsView(s) {
   const t = new Date(s.today);
   const day = d => Math.floor((t - new Date(d)) / 864e5);
   const owed = s.dues.filter(d => d.direction !== "we_owe_supplier");
-  if (!owed.length) return [empty("check", "Nothing owed to you right now.")];
+  if (!owed.length) return [empty("Nothing owed to you right now.")];
   const B = [
-    {k: "Not due yet", c: "var(--in)", f: d => d.due_date && day(d.due_date) <= 0},
-    {k: "1 to 7 days late", c: "var(--out)", f: d => d.due_date && day(d.due_date) >= 1 && day(d.due_date) <= 7},
-    {k: "8 to 30 days late", c: "#fb923c", f: d => d.due_date && day(d.due_date) > 7 && day(d.due_date) <= 30},
-    {k: "Over 30 days late", c: "var(--bad)", f: d => d.due_date && day(d.due_date) > 30},
-    {k: "No due date", c: "var(--faint)", f: d => !d.due_date},
+    {k: "Not due yet", c: "var(--ok)", f: d => d.due_date && day(d.due_date) <= 0},
+    {k: "1 to 7 days late", c: "var(--hold)", f: d => d.due_date && day(d.due_date) >= 1 && day(d.due_date) <= 7},
+    {k: "8 to 30 days late", c: "#c2641d", f: d => d.due_date && day(d.due_date) > 7 && day(d.due_date) <= 30},
+    {k: "Over 30 days late", c: "var(--owed)", f: d => d.due_date && day(d.due_date) > 30},
+    {k: "No due date", c: "var(--ink3)", f: d => !d.due_date},
   ].map(b => ({...b, v: owed.filter(b.f).reduce((a, d) => a + d.remaining, 0)}));
   const total = B.reduce((a, b) => a + b.v, 0) || 1;
   const stack = el("div", {className: "stack", role: "img", "aria-label": "Money owed by how late it is"});
   B.filter(b => b.v > 0).forEach(b => { const i = el("i", {title: `${b.k}: ${inr(b.v)}`}); i.style.cssText = `width:${b.v / total * 100}%;background:${b.c}`; stack.append(i); });
   const legend = el("div", {className: "legend"}, B.filter(b => b.v > 0).map(b => {
     const dot = el("i"); dot.style.background = b.c;
-    return el("div", {}, dot, el("span", {textContent: b.k}), el("b", {textContent: inr(b.v)}));
+    return el("div", {}, dot, el("span", {textContent: b.k}), el("b", {className: "num", textContent: inr(b.v)}));
   }));
   const byParty = {};
   owed.forEach(d => byParty[d.party] = (byParty[d.party] || 0) + d.remaining);
   const top = Object.entries(byParty).sort((a, b) => b[1] - a[1]).slice(0, 5), max = top[0][1];
   const bars = top.map(([p, v]) => { const m = el("div", {className: "meter"}, el("i")); m.firstChild.style.width = v / max * 100 + "%";
-    return el("div", {className: "hbar"}, el("span", {textContent: p}), m, el("b", {textContent: inr(v)})); });
-  return [el("div", {className: "sub-h", style: "margin-top:0", textContent: "How late is it?"}), el("div", {style: "margin-top:10px"}, stack), legend,
-    el("div", {className: "sub-h", textContent: "Who owes the most"}), ...bars];
+    return el("div", {className: "hbar"}, el("span", {textContent: p}), m, el("b", {className: "num", textContent: inr(v)})); });
+  return [el("div", {}, stack), legend, el("div", {className: "sub-h", textContent: "Largest balances"}), ...bars];
 }
 
 function accView(s) {
-  const e = s.eval, L = e.last;
-  const out = [];
+  const e = s.eval, L = e.last, out = [];
   if (e.running) {
     const bar = el("div", {className: "meter"}, el("i")); bar.firstChild.style.width = (e.total ? e.done / e.total * 100 : 0) + "%";
-    return [el("div", {className: "progress", textContent: `Running ${e.total} labelled messages through Nemotron: ${e.done} done`}), bar];
+    return [el("p", {className: "note", style: "margin-bottom:8px", textContent: `Scoring ${e.total} labelled messages: ${e.done} done`}), bar];
   }
   if (e.error) out.push(el("div", {className: "err", textContent: e.error}));
-  if (!L) return [...out, empty("target", "Run the evaluation to score Nemotron on 48 hand-labelled Hinglish messages, 20 of them written after the prompt was frozen.")];
-  const ring = el("div", {className: "ring"}, el("span", {textContent: Math.round(L.accuracy) + "%"}));
-  ring.style.setProperty("--p", L.accuracy);
-  out.push(el("div", {className: "acc"}, ring, el("p", {},
-    el("b", {textContent: `${L.correct} of ${L.total} correct`}),
-    ` on hand-labelled Hinglish messages. Right means intent, party, amount, direction and items all match. Last run ${L.at}.`)));
+  if (!L) return [...out, empty("Run the evaluation to score Nemotron on 48 labelled Hinglish messages, 20 written after the prompt was frozen.")];
+  out.push(el("div", {className: "big"}, `${L.correct}`, el("small", {textContent: ` of ${L.total} correct (${Math.round(L.accuracy)}%)`})));
+  out.push(el("p", {className: "note", style: "margin-top:8px", textContent: `A message counts only if intent, party, amount, direction and items all match. Last run ${L.at}.`}));
   const bs = L.by_set || {};
-  if (bs.holdout) out.push(el("div", {className: "kv", style: "margin-top:10px"},
-    el("span", {}, "demo set ", el("b", {textContent: `${bs.demo.correct}/${bs.demo.total}`})),
-    el("span", {}, "fresh set ", el("b", {textContent: `${bs.holdout.correct}/${bs.holdout.total}`}))));
+  if (bs.holdout) out.push(el("dl", {className: "kv", style: "margin:12px -16px 0"},
+    el("dt", {textContent: "Demo messages"}), el("dd", {textContent: `${bs.demo.correct} of ${bs.demo.total}`}),
+    el("dt", {textContent: "Written after the prompt was frozen"}), el("dd", {textContent: `${bs.holdout.correct} of ${bs.holdout.total}`})));
   if (L.misses.length) {
     out.push(el("div", {className: "sub-h", textContent: `${L.misses.length} wrong ${L.misses.length === 1 ? "answer" : "answers"}`}));
     L.misses.forEach(m => out.push(el("div", {className: "miss"}, el("q", {textContent: m.message}),
-      `wrong: ${m.wrong_fields.join(", ")} · ${m.reached_ledger ? "would reach the ledger" : "stopped by code"}`)));
+      `Wrong: ${m.wrong_fields.join(", ")}. ${m.reached_ledger ? "Would reach the ledger." : "Stopped by code."}`)));
   }
   return out;
 }
@@ -625,19 +501,21 @@ function perfView(s) {
   const lat = live ? p.avg_latency_ms : L ? L.avg_latency_ms : 0;
   const tin = live ? p.prompt_tokens : L ? L.prompt_tokens : 0, tout = live ? p.completion_tokens : L ? L.completion_tokens : 0;
   const n = live ? p.messages - p.failed : L ? L.total : 0;
-  const st = (label, val, note) => el("div", {className: "stat"}, el("small", {textContent: label}), el("b", {textContent: val}), note ? el("em", {textContent: " " + note}) : "");
-  return [el("div", {className: "stats"},
-    st("Avg time per message", lat ? (lat / 1000).toFixed(1) + " s" : "n/a", "with reasoning"),
-    st("Tokens per message", n ? Math.round((tin + tout) / n).toLocaleString() : "n/a", n ? `${Math.round(tin / n)} in · ${Math.round(tout / n)} out` : ""),
-    st("Tokens used", (tin + tout).toLocaleString(), live ? "this session" : L ? "last evaluation" : ""),
-    st("Cost per 1,000 messages", p.cost_per_1000 != null ? "$" + p.cost_per_1000 : "n/a", p.cost_per_1000 != null ? "" : "set prices in settings.env")),
-    el("p", {className: "note", style: "margin:12px 0 0", textContent: "Served by Nemotron on Nebius Token Factory. Reasoning stays on for accuracy: switching it off was about 7x faster but dropped accuracy to 57% on the demo set."})];
+  const rows = [
+    ["Average time per message", lat ? (lat / 1000).toFixed(1) + " s" : "n/a"],
+    ["Tokens per message", n ? Math.round((tin + tout) / n).toLocaleString() : "n/a"],
+    ["Tokens used (" + (live ? "this session" : "last evaluation") + ")", (tin + tout).toLocaleString()],
+    ["Cost per 1,000 messages", p.cost_per_1000 != null ? "$" + p.cost_per_1000 : "n/a"],
+  ];
+  return [el("dl", {className: "kv"}, rows.map(([k, v]) => [el("dt", {textContent: k}), el("dd", {textContent: v})]).flat()),
+    el("p", {className: "note", style: "padding:12px 16px", textContent: (p.cost_per_1000 == null ? "Add Token Factory prices to settings.env to show cost. " : "") +
+      "Reasoning stays on for accuracy: switching it off was about 7x faster but scored 57% on the demo set."})];
 }
 
 function render(s) {
   S = s;
   $("today").textContent = s.today;
-  if (s.model) $("model").textContent = "Nemotron · " + s.model.split("/").pop();
+  if (s.model) $("model").textContent = s.model.split("/").pop() + " on Nebius";
   $("hero").hidden = !(s.log.length === 0 && s.dues.length === 0 && s.collections.length === 0);
 
   const low = s.items.filter(i => i.stock_qty <= i.reorder_level);
@@ -645,132 +523,118 @@ function render(s) {
   const owed = s.dues.filter(d => d.direction !== "we_owe_supplier").length;
   const owe = s.dues.filter(d => d.direction === "we_owe_supplier").length;
   $("kin").textContent = inr(s.totals.customer_owes_us);
-  $("kin-s").textContent = owed ? `from ${owed} open ${owed === 1 ? "bill" : "bills"}` : "all settled";
+  $("kin-s").textContent = owed ? `${owed} open ${owed === 1 ? "bill" : "bills"}` : "all settled";
   $("kout").textContent = inr(s.totals.we_owe_supplier);
   $("kout-s").textContent = owe ? `${owe} supplier ${owe === 1 ? "bill" : "bills"}` : "nothing pending";
   $("klow").textContent = low.length;
-  $("klow-s").textContent = low.length ? low.slice(0, 2).map(i => i.name).join(", ") + (low.length > 2 ? "…" : "") : "stock looks healthy";
+  $("klow-s").textContent = low.length ? low.slice(0, 3).map(i => i.name).join(", ") + (low.length > 3 ? "…" : "") : "stock looks healthy";
   $("kask").textContent = ask;
-  $("kask-s").textContent = ask ? `${s.review.length} to decide · ${s.drafts.length} to approve` : "all clear";
+  $("kask-s").textContent = ask ? `${s.review.length} to decide, ${s.drafts.length} to approve` : "all clear";
 
-  // briefing
   const b = s.brief, bn = $("brief");
-  if (briefing) {
-    bn.className = "brief"; bn.replaceChildren(el("div", {className: "skel"}, el("i"), el("i"), el("i")));
-  } else if (b.text) {
-    bn.className = "brief"; bn.textContent = b.text;
-  } else {
-    bn.className = "brief ph"; bn.textContent = "Pick a language and Nemotron will write today's briefing: who to chase, what to reorder, what needs a decision.";
-  }
+  if (briefing) { bn.className = "brief"; bn.replaceChildren(el("div", {className: "skel"}, el("i"), el("i"), el("i"))); }
+  else if (b.text) { bn.className = "brief"; bn.textContent = b.text; }
+  else { bn.className = "brief ph"; bn.textContent = "Pick a language and Nemotron will write today's briefing: who to chase, what to reorder, what needs a decision."; }
   const showLang = b.lang || lang;
   [["b-en", "english"], ["b-hi", "hinglish"], ["b-dv", "hindi"]].forEach(([id, l]) => $(id).classList.toggle("on", !!b.text && showLang === l));
-  $("brief-src").replaceChildren(...(b.text ? [icon("check"), document.createTextNode(b.source === "nemotron"
-    ? "Written by Nemotron. Every number is checked against the ledger."
-    : "Model unavailable or failed the number check, showing the plain ledger summary.")] : []));
+  $("brief-src").textContent = b.text ? (b.source === "nemotron" ? "Written by Nemotron. Every number is checked against the ledger."
+    : "Model unavailable or failed the number check, showing the plain ledger summary.") : "";
 
-  // dues
   const soon = d => d.due_date && !d.overdue && (new Date(d.due_date) - new Date(s.today)) / 864e5 <= 3;
-  $("dues").replaceChildren(...(s.dues.length ? s.dues.map(d => {
-    const we = d.direction === "we_owe_supplier";
-    return el("div", {className: "li"},
-      el("div", {className: "m"}, el("b", {textContent: d.party}), el("small", {textContent: d.due_date ? "Due " + d.due_date : "No due date"})),
-      el("span", {className: "tag " + (d.overdue ? "over" : soon(d) ? "soon" : we ? "we" : "ok"), textContent: d.overdue ? "overdue" : we ? "we owe" : "owes us"}),
-      el("div", {className: "v", textContent: inr(d.remaining)}));
-  }) : [empty("check", "No open dues.")]));
-
-  // stock
+  const th = (...c) => el("thead", {}, el("tr", {}, c.map(([t, r]) => el("th", {className: r ? "r" : "", textContent: t}))));
+  $("dues").replaceChildren(s.dues.length ? el("table", {className: "ledger"}, th(["Party"], ["Status"], ["Amount", 1]),
+    el("tbody", {}, s.dues.map(d => {
+      const we = d.direction === "we_owe_supplier";
+      return el("tr", {}, el("td", {}, d.party, el("small", {textContent: d.due_date ? "Due " + d.due_date : "No due date"})),
+        el("td", {}, el("span", {className: "tag " + (d.overdue ? "over" : soon(d) ? "warn" : ""), textContent: d.overdue ? "Overdue" : we ? "We owe" : "Owes us"})),
+        el("td", {className: "r num", textContent: inr(d.remaining)}));
+    }))) : empty("No open dues."));
   const items = [...s.items].sort((a, c) => (a.stock_qty / (a.reorder_level || 1e9)) - (c.stock_qty / (c.reorder_level || 1e9)));
-  $("stock").replaceChildren(...(items.length ? items.map(i => {
-    const isLow = i.stock_qty <= i.reorder_level;
-    const pct = i.reorder_level ? Math.min(100, i.stock_qty / (i.reorder_level * 2) * 100) : 100;
-    const bar = el("div", {className: "meter" + (isLow ? " low" : "")}, el("i")); bar.firstChild.style.width = pct + "%";
-    return el("div", {className: "li"}, el("div", {className: "m"}, el("b", {textContent: i.name}), bar),
-      isLow ? el("span", {className: "tag over", textContent: "reorder"}) : "",
-      el("div", {className: "v", textContent: (+i.stock_qty.toFixed(1)) + " " + (i.unit || "")}));
-  }) : [empty("box", "No items yet.")]));
+  $("stock").replaceChildren(items.length ? el("table", {className: "ledger"}, th(["Item"], [""], ["Left", 1]),
+    el("tbody", {}, items.map(i => {
+      const isLow = i.stock_qty <= i.reorder_level;
+      const pct = i.reorder_level ? Math.min(100, i.stock_qty / (i.reorder_level * 2) * 100) : 100;
+      const bar = el("div", {className: "meter" + (isLow ? " low" : ""), style: "width:90px;margin-top:6px"}, el("i")); bar.firstChild.style.width = pct + "%";
+      return el("tr", {}, el("td", {}, i.name, bar), el("td", {}, isLow ? el("span", {className: "tag over", textContent: "Reorder"}) : ""),
+        el("td", {className: "r num", textContent: (+i.stock_qty.toFixed(1)) + " " + (i.unit || "")}));
+    }))) : empty("No items yet."));
 
-  // collections
   $("coll-n").textContent = s.collections.length;
   $("close-note").textContent = s.last_close
     ? `Last close: ${s.last_close}. Messages use the balances frozen at close. The day closes by itself at ${s.eod_time}; spreadsheets are saved in the eod folder.`
-    : `The day hasn't been closed yet, so messages use today's live balances. It closes by itself at ${s.eod_time}.`;
-  if (!editingPhone) $("coll").replaceChildren(...(s.collections.length ? s.collections.map(collCard) : [empty("check", "Nobody owes you money right now.")]));
+    : `The day hasn't been closed yet, so messages use live balances. It closes by itself at ${s.eod_time}.`;
+  if (!editingPhone) $("coll").replaceChildren(...(s.collections.length ? s.collections.map(collRow) : [empty("Nobody owes you money right now.")]));
   $("charts").replaceChildren(...chartsView(s));
 
-  // trace + safety
   $("log-n").textContent = s.log.length;
-  $("log").replaceChildren(...(s.log.length ? s.log.map(traceCard) : [empty("chat", "Nothing yet. Paste a message to see exactly how Nemotron reads it.")]));
+  $("log").replaceChildren(...(s.log.length ? s.log.map(traceRow) : [empty("Nothing yet. Paste a message to see how Nemotron reads it.")]));
   $("sf-read").textContent = s.perf.messages; $("sf-rec").textContent = s.perf.recorded; $("sf-hold").textContent = s.perf.review + s.perf.failed;
 
-  // drafts (skip re-render while the owner is typing an edit)
-  $("dr-n").textContent = s.drafts.length; $("dr-n").classList.toggle("hot", s.drafts.length > 0);
-  if (editing === null) $("drafts").replaceChildren(...(s.drafts.length ? s.drafts.map(draftCard) : [empty("send", 'No drafts. Press "Draft reorder" to prepare the supplier order.')]));
-
-  // review queue
-  $("rv-n").textContent = s.review.length; $("rv-n").classList.toggle("hot", s.review.length > 0);
+  $("dr-n").textContent = s.drafts.length;
+  if (editing === null) $("drafts").replaceChildren(...(s.drafts.length ? s.drafts.map(draftRow) : [empty('No drafts. "Draft reorder" prepares the supplier order.')]));
+  $("rv-n").textContent = s.review.length;
   $("review").replaceChildren(...(s.review.length ? s.review.map(r => el("div", {className: "rv"},
     el("div", {}, r.raw_message, el("small", {textContent: r.reason})),
     el("button", {className: "btn sm", textContent: "Done", onclick: async () => { await api(`review/${r.id}/dismiss`); refresh(); }})
-  )) : [empty("check", "All clear.")]));
+  )) : [empty("All clear.")]));
 
   $("acc").replaceChildren(...accView(s));
   $("eval-run").disabled = s.eval.running;
   $("perf").replaceChildren(...perfView(s));
 
-  // demo progress
   const j = s.job, pr = $("progress"); pr.hidden = !j.running;
   if (j.running) {
-    const bar = el("div", {className: "meter"}, el("i")); bar.firstChild.style.width = (j.total ? j.done / j.total * 100 : 0) + "%";
+    const bar = el("div", {className: "meter", style: "margin-top:8px"}, el("i")); bar.firstChild.style.width = (j.total ? j.done / j.total * 100 : 0) + "%";
     pr.replaceChildren(`Nemotron is reading messages: ${j.done} of ${j.total}`, bar);
   }
   $("demo").disabled = j.running; $("hero-demo").disabled = j.running;
 }
 
-function collCard(c) {
-  const tag = c.opened_today ? ["done", "opened today ✓"]
-    : c.state === "changed" ? ["warn", "balance changed since close, check before sending"]
-    : c.state === "new" ? ["warn", "new since last close"] : ["ok", "frozen at close " + c.frozen_day];
-  const card = el("div", {className: "coll"});
-  const av = el("div", {className: "avatar", textContent: (c.name.trim()[0] || "?").toUpperCase()});
-  av.style.setProperty("--h", hue(c.name));
-  card.append(el("div", {className: "coll-h"}, av,
-    el("div", {className: "who"}, el("b", {textContent: c.name}), el("small", {textContent: c.days_overdue ? `${c.days_overdue} din overdue` : "not overdue yet"})),
-    el("div", {className: "amt", textContent: inr(c.live_total)})));
-  card.append(el("div", {className: "row", style: "margin-top:10px"}, el("span", {className: "tag " + tag[0], textContent: tag[1]}),
-    el("span", {className: "tag safe", title: "This text is built by code from the closing balances. No model writes the money.", textContent: "written by code, not AI"})));
-  card.append(el("div", {className: "bubble", textContent: c.text}));
-  const phone = el("input", {className: "phone", placeholder: "WhatsApp number", value: c.phone || "", inputMode: "tel", "aria-label": "WhatsApp number"});
+function collRow(c) {
+  const tag = c.opened_today ? ["done", "Opened today"]
+    : c.state === "changed" ? ["warn", "Balance changed since close"]
+    : c.state === "new" ? ["warn", "New since last close"] : ["", "Frozen " + c.frozen_day];
+  const d = el("details", {className: "coll", open: openColl.has(c.party_id)});
+  d.addEventListener("toggle", () => { d.open ? openColl.add(c.party_id) : openColl.delete(c.party_id); });
+  d.append(el("summary", {},
+    el("div", {className: "who"}, el("b", {textContent: c.name}), el("span", {textContent: c.days_overdue ? `${c.days_overdue} days overdue` : "Not overdue yet"})),
+    el("div", {className: "st"}, el("span", {className: "tag " + tag[0], textContent: tag[1]})),
+    el("div", {className: "amt num", textContent: inr(c.live_total)})));
+  const phone = el("input", {placeholder: "WhatsApp number", value: c.phone || "", inputMode: "tel", "aria-label": "WhatsApp number"});
   phone.onfocus = () => { editingPhone = true; };
   phone.onblur = () => { editingPhone = false; };
   const err = el("div", {className: "err", hidden: true});
-  card.append(el("div", {className: "row"},
-    el("button", {className: "btn wa", onclick: async () => { window.open(c.link, "_blank", "noopener"); await api(`collections/${c.party_id}/opened`); refresh(); }},
-      icon("send"), c.opened_today ? "Open WhatsApp again" : "Open WhatsApp"),
-    phone,
-    el("button", {className: "btn sm", textContent: "Save number", onclick: async () => {
-      try { await api(`party/${c.party_id}/phone`, {phone: phone.value}); editingPhone = false; err.hidden = true; toast("Number saved"); refresh(); }
-      catch (e) { err.hidden = false; err.textContent = e.message; } }})), err);
-  if (!c.phone) card.append(el("p", {className: "note", style: "margin:10px 0 0", textContent: "No number saved: WhatsApp will open without a chat selected."}));
-  return card;
+  d.append(el("div", {className: "coll-b"},
+    el("p", {className: "code-note", textContent: "Reminder text, built by code from the closing balances. No model writes the money."}),
+    el("pre", {className: "reminder", textContent: c.text}),
+    el("div", {className: "row"},
+      el("button", {className: "btn primary sm", textContent: c.opened_today ? "Open WhatsApp again" : "Open WhatsApp", onclick: async () => {
+        window.open(c.link, "_blank", "noopener"); await api(`collections/${c.party_id}/opened`); refresh(); }}),
+      phone,
+      el("button", {className: "btn sm", textContent: "Save number", onclick: async () => {
+        try { await api(`party/${c.party_id}/phone`, {phone: phone.value}); editingPhone = false; err.hidden = true; toast("Number saved"); refresh(); }
+        catch (e) { err.hidden = false; err.textContent = e.message; } }})),
+    err,
+    c.phone ? "" : el("p", {className: "note", style: "margin-top:8px", textContent: "No number saved: WhatsApp will open without a chat selected."})));
+  return d;
 }
 
-function draftCard(d) {
-  const label = d.kind === "reorder" ? "Reorder" : d.kind;
-  const card = el("div", {className: "draft"});
-  card.append(el("div", {className: "meta"}, el("span", {}, `${label} → `, el("b", {textContent: d.party})),
-    el("span", {className: "tag " + (d.source === "nemotron" ? "done" : "ok"), textContent: d.source === "nemotron" ? "written by Nemotron" : d.source === "owner" ? "edited by you" : "template"})));
+function draftRow(d) {
+  const row = el("div", {className: "draft"});
+  row.append(el("div", {className: "meta"}, el("span", {}, (d.kind === "reorder" ? "Reorder from " : d.kind + " to "), el("b", {textContent: d.party})),
+    el("span", {textContent: d.source === "nemotron" ? "Written by Nemotron" : d.source === "owner" ? "Edited by you" : "Template"})));
   if (editing === d.id) {
     const ta = el("textarea", {value: d.body});
-    card.append(ta, el("div", {className: "row"},
+    row.append(ta, el("div", {className: "row"},
       el("button", {className: "btn primary sm", textContent: "Save", onclick: async () => { await api(`drafts/${d.id}/edit`, {text: ta.value}); editing = null; toast("Draft updated"); refresh(); }}),
       el("button", {className: "btn sm", textContent: "Cancel", onclick: () => { editing = null; refresh(); }})));
   } else {
-    card.append(el("p", {textContent: d.body}), el("div", {className: "row"},
-      el("button", {className: "btn wa", onclick: async () => { const r = await api(`drafts/${d.id}/approve`); if (r.link) window.open(r.link, "_blank", "noopener"); refresh(); }}, icon("send"), "Approve & open WhatsApp"),
+    row.append(el("p", {textContent: d.body}), el("div", {className: "row"},
+      el("button", {className: "btn primary sm", textContent: "Approve and open WhatsApp", onclick: async () => { const r = await api(`drafts/${d.id}/approve`); if (r.link) window.open(r.link, "_blank", "noopener"); refresh(); }}),
       el("button", {className: "btn sm", textContent: "Edit", onclick: () => { editing = d.id; refresh(); }}),
-      el("button", {className: "btn sm danger", textContent: "Reject", onclick: async () => { await api(`drafts/${d.id}/reject`); refresh(); }})));
+      el("button", {className: "btn sm quiet danger", textContent: "Reject", onclick: async () => { await api(`drafts/${d.id}/reject`); refresh(); }})));
   }
-  return card;
+  return row;
 }
 
 async function refresh() {
@@ -781,12 +645,11 @@ function setTab(t) {
   $("dues").hidden = t !== "dues"; $("stock").hidden = t !== "stock";
 }
 
-/* actions */
 async function addMessage(text) { await api("message", {text}); toast("Added to ledger"); }
 const askBrief = async l => { lang = l; briefing = true; refresh(); try { await api("briefing", {lang: l}); } finally { briefing = false; } };
 const startDemo = e => run(e.currentTarget, () => api("demo/load"), "Starting…");
 
-$("chips").replaceChildren(...SAMPLES.map(t => el("button", {className: "chip", textContent: t, onclick: () => { $("msg").value = t; $("msg").focus(); }})));
+SAMPLES.forEach(t => $("chips").append(el("button", {textContent: t, onclick: () => { $("msg").value = t; $("msg").focus(); }})));
 $("send").onclick = e => run(e.currentTarget, async () => {
   const text = $("msg").value.trim(); if (!text) return;
   await addMessage(text); $("msg").value = "";
@@ -802,9 +665,9 @@ $("reset").onclick = e => { if (confirm("Reset the ledger and reload fresh demo 
 $("eval-run").onclick = e => run(e.currentTarget, () => api("eval/run"), "Starting…");
 $("t-dues").onclick = () => setTab("dues"); $("t-stock").onclick = () => setTab("stock");
 document.querySelectorAll(".mnav [data-go]").forEach(b => b.onclick = () => $(b.dataset.go).scrollIntoView({behavior: "smooth", block: "start"}));
-if (/Mac|iPhone|iPad/.test(navigator.platform)) {} else $("kbd-hint").firstElementChild.textContent = "Ctrl";
+if (!/Mac|iPhone|iPad/.test(navigator.platform)) $("kbd-hint").firstElementChild.textContent = "Ctrl";
 
-/* voice input (browser speech recognition; no audio leaves your machine through KhataPilot) */
+/* voice input: the browser's speech recognition */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (SR) {
   $("mic").hidden = false; $("mic-lang").hidden = false;
@@ -815,23 +678,23 @@ if (SR) {
     const base = $("msg").value ? $("msg").value.replace(/\s*$/, "\n") : "";
     rec.onresult = ev => { $("msg").value = base + [...ev.results].map(r => r[0].transcript).join(" "); };
     rec.onerror = ev => toast("Microphone: " + ev.error, true);
-    rec.onend = () => { rec = null; $("mic").classList.remove("on"); $("mic-t").textContent = "Speak"; $("msg").focus(); };
-    $("mic").classList.add("on"); $("mic-t").textContent = "Listening…"; rec.start();
+    rec.onend = () => { rec = null; $("mic-t").textContent = "Speak"; $("msg").focus(); };
+    $("mic-t").textContent = "Listening…"; rec.start();
   };
 }
 
 /* guided demo */
 const STEPS = [
   {title: "A shop that runs on WhatsApp", body: "Small traders manage money and stock through messages like “Kapoor traders ne 3,000 bhej diye”. This tour takes about 90 seconds and uses the real model.", sel: null},
-  {sel: "c-compose", title: "1. Paste a message", body: "Customers write in Hinglish. We will paste one now and let Nemotron on Nebius read it.", action: "Read this message",
+  {sel: "c-compose", title: "1. Paste a message", body: "Customers write in Hinglish. We paste one now and let Nemotron on Nebius read it.", action: "Read this message",
     run: async () => { $("msg").value = "Kapoor traders ne 3,000 bhej diye"; await sleep(500); await addMessage($("msg").value); $("msg").value = ""; }},
-  {sel: "c-trace", title: "2. See how it was read", body: "Nemotron turned the message into structured data. Open “Raw model output” to see the JSON. Code then checked every field before anything touched the ledger.", at: () => document.querySelector("#log .tr")},
-  {sel: "c-safety", title: "3. The model never has the last word", body: "The model reads, code validates, and a person presses send. Nothing here is ever sent automatically."},
-  {sel: "c-brief", title: "4. Morning briefing", body: "Nemotron writes the owner's briefing from ledger facts. Every number it uses is checked against the books, and it falls back to plain text if one is wrong.", action: "Write the briefing", run: () => askBrief("english")},
-  {sel: "c-coll", title: "5. One-click reminders", body: "Customer reminders are built by code from the closing balances, never by the model, because they contain money. Press Open WhatsApp and send it yourself.", at: () => document.querySelector("#coll .coll")},
-  {sel: "c-acc", title: "6. Measured, not claimed", body: "48 hand-labelled Hinglish messages scored against Nemotron, 20 of them written after the prompt was frozen. Press Run evaluation any time to reproduce the number.", at: null},
-  {sel: "c-perf", title: "7. Fast and cheap on Nebius", body: "Latency and tokens per message are tracked live, so you can see what it costs to run this for a real shop."},
-  {title: "That is KhataPilot", body: "WhatsApp in, ledger and briefing out, a human on every send. Thanks for watching.", sel: null},
+  {sel: "c-trace", title: "2. See how it was read", body: "Nemotron turned the message into structured data. Open “Raw model output” for the JSON. Code then checked every field before anything touched the ledger.", at: () => document.querySelector("#log .tr")},
+  {sel: "c-safety", title: "3. The model never has the last word", body: "The model reads, code validates, and a person presses send. Nothing here is sent automatically."},
+  {sel: "c-brief", title: "4. Morning briefing", body: "Nemotron writes the owner's briefing from ledger facts. Every number is checked against the books, with a plain-text fallback if one is wrong.", action: "Write the briefing", run: () => askBrief("english")},
+  {sel: "c-coll", title: "5. One-click reminders", body: "Open a customer to see the reminder. Code builds it from the closing balances, never the model, because it contains money. You press Open WhatsApp.", at: () => document.querySelector("#coll .coll")},
+  {sel: "c-acc", title: "6. Measured, not claimed", body: "48 hand-labelled Hinglish messages scored against Nemotron, 20 of them written after the prompt was frozen. Press Run evaluation to reproduce the number.", at: null},
+  {sel: "c-perf", title: "7. Cost and speed on Nebius", body: "Latency and tokens per message are tracked live, so you can see what it costs to run this for a real shop."},
+  {title: "That is KhataPilot", body: "WhatsApp in, ledger and briefing out, a human on every send.", sel: null},
 ];
 let step = 0, stepBusy = false, tourTimer = null;
 function tourOpen() { touring = true; step = 0; $("tour").hidden = false; tourShow(); }
@@ -841,16 +704,16 @@ function tourShow() {
   const target = st.sel ? ((st.at && st.at()) || $(st.sel)) : null;
   const card = el("div", {className: "tour-card"});
   card.append(el("div", {className: "tour-n", textContent: `Step ${step + 1} of ${STEPS.length}`}), el("h3", {textContent: st.title}), el("p", {textContent: st.body}));
-  const next = el("button", {className: "btn primary sm", textContent: step === STEPS.length - 1 ? "Finish" : "Next", onclick: () => { if (step === STEPS.length - 1) return tourClose(); step++; tourShow(); }});
   const row = el("div", {className: "row"});
   if (st.action) {
     const go = el("button", {className: "btn primary sm", onclick: async () => {
       if (stepBusy) return; stepBusy = true; go.disabled = true; go.replaceChildren(el("span", {className: "spin"}), "Working…");
       try { await st.run(); await refresh(); toast("Done"); step++; stepBusy = false; tourShow(); }
       catch (e) { stepBusy = false; go.disabled = false; go.textContent = st.action; toast(String(e.message || e), true); } }, textContent: st.action});
-    row.append(go, el("button", {className: "btn sm ghost", textContent: "Skip", onclick: () => { step++; tourShow(); }}));
-  } else row.append(next);
-  row.append(el("button", {className: "btn sm ghost", textContent: "Exit", onclick: tourClose}),
+    row.append(go, el("button", {className: "btn sm quiet", textContent: "Skip", onclick: () => { step++; tourShow(); }}));
+  } else row.append(el("button", {className: "btn primary sm", textContent: step === STEPS.length - 1 ? "Finish" : "Next",
+    onclick: () => { if (step === STEPS.length - 1) return tourClose(); step++; tourShow(); }}));
+  row.append(el("button", {className: "btn sm quiet", textContent: "Exit", onclick: tourClose}),
     el("span", {className: "dots"}, STEPS.map((_, i) => el("i", {className: i === step ? "on" : ""}))));
   card.append(row);
   const hole = el("div", {className: "tour-hole"});
@@ -866,11 +729,11 @@ function tourShow() {
 function place(target, hole, card) {
   const vw = innerWidth, vh = innerHeight, cw = card.offsetWidth, ch = card.offsetHeight;
   if (!target) { hole.style.cssText = "left:50%;top:50%;width:0;height:0"; card.style.left = (vw - cw) / 2 + "px"; card.style.top = Math.max(12, (vh - ch) / 2) + "px"; return; }
-  const r = target.getBoundingClientRect(), pad = 8;
+  const r = target.getBoundingClientRect(), pad = 6;
   hole.style.left = r.left - pad + "px"; hole.style.top = r.top - pad + "px"; hole.style.width = r.width + pad * 2 + "px"; hole.style.height = r.height + pad * 2 + "px";
   let x = r.right + 16, y = Math.max(12, Math.min(r.top, vh - ch - 12));
   if (x + cw > vw - 12) { x = Math.max(12, Math.min(r.left, vw - cw - 12)); y = r.bottom + 16; if (y + ch > vh - 12) y = Math.max(12, r.top - ch - 16); }
-  if (vw < 700) { x = 12; y = vh - ch - 84; }
+  if (vw < 700) { x = 12; y = vh - ch - 68; }
   card.style.left = x + "px"; card.style.top = y + "px";
 }
 $("tour-btn").onclick = tourOpen; $("hero-tour").onclick = tourOpen;
