@@ -207,6 +207,9 @@ python drafts.py review           # approve / edit / reject in the terminal
   are listed in the message text.
 - Sales are tracked as quantities and stock. Amounts and bill dates come from "baaki hai" style messages;
   rate x quantity pricing per sale is not built yet.
+- The briefing guard verifies numbers, not wording. In testing, Nemotron occasionally invented a time word ("by tomorrow"),
+  leaked a field name, or once reversed who owes whom in a Hindi briefing, all with correct figures. The prompt now forbids
+  field names, and the owner can see the facts in the dashboard, but a direction or timing check in code is not built.
 - Single shop, single user, runs locally, no login.
 - Evaluation set is small (48 messages) and written by us; see [Accuracy, honestly](#accuracy-honestly).
 - Extraction takes a few seconds per message because reasoning is on.
