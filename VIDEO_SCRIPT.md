@@ -1,7 +1,7 @@
 # Demo video script (target 2:45, hard limit 3:00)
 
-> **A ready-made 2:13 version exists:** `khatapilot-demo.mp4` (built by `tools/make_video.py`). It is a narrated walkthrough made
-> from real screens of the hosted demo with captions and a synthetic voice. It is **not** a live screen recording and the voice
+> **A ready-made 2:09 version exists:** `khatapilot-launch.mp4` (built by `tools/brag_video/`: scenes in `launch.html`, rendered by
+> `render.mjs`, soundtrack from `music.py`, voice from ElevenLabs). It is a narrated walkthrough of the hosted demo using real saved Nemotron outputs. It is **not** a live screen recording and the voice
 > is synthetic, so say that in the YouTube description. If you have time, recording your own live run (below) is stronger.
 
 
