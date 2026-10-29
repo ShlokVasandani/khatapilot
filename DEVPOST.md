@@ -3,6 +3,12 @@
 **Track:** Best Apps and Agents
 **Tagline:** WhatsApp in, ledger and briefing out, a human on every send.
 
+## Elevator pitch (167 characters, limit 200)
+KhataPilot reads Hinglish WhatsApp shop messages with Nemotron on Nebius, keeps the ledger in code, and preps reminders. The model reads, code decides, you press send.
+
+## Project name
+KhataPilot
+
 ## Links (fill in the video URL after uploading)
 - Live demo (free, no key): https://shlokvasandani.github.io/khatapilot/demo/
 - Website: https://shlokvasandani.github.io/khatapilot/
@@ -67,3 +73,22 @@ NVIDIA Nemotron-3-Nano-30B-A3B, Nebius Token Factory, Python, SQLite, HTML/CSS/J
   cannot be abused. Run the repo with your own Token Factory key to read any message live.
 - Briefings in the demo are real unedited model outputs, chosen from several runs for correctness. Not every run is this clean.
 - The project was built entirely during the submission period (first commit 2 Oct 2026).
+
+## Image gallery (files in ~/Downloads/devpost-gallery, upload in this order)
+1. `thumbnail-3x2.png`: use as the project thumbnail
+2. `1-website-hero.png`: the website
+3. `2-message-to-ledger.png`: a Hinglish message becoming a ledger entry
+4. `3-how-each-message-was-read.png`: raw Nemotron JSON, time, tokens
+5. `4-briefing-and-reminder.png`: Hindi briefing, code-built reminder, supplier draft
+6. `5-accuracy-and-performance.png`: accuracy and Nebius performance
+
+## Submission-day checklist
+- [ ] Log in to Devpost and press **Join hackathon**, then **Enter a submission**
+- [ ] Track: **Best Apps and Agents**
+- [ ] Paste the sections above (name, pitch, story, built with, links)
+- [ ] Demo video URL (public YouTube, 3 minutes or less): the narrated walkthrough is `khatapilot-demo.mp4`
+- [ ] Demo URL: https://shlokvasandani.github.io/khatapilot/demo/
+- [ ] Code URL: https://github.com/ShlokVasandani/khatapilot (public, MIT shown at the top of the repo page)
+- [ ] Feedback sections: paste from `FEEDBACK.md`
+- [ ] "Existed before the submission period?" No: first commit 2 Oct 2026
+- [ ] Press **Submit** before Oct 30, 10:00 AM Pacific (10:30 PM IST)
